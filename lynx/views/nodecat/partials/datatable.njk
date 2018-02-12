@@ -1,0 +1,42 @@
+{% macro table(config) %}
+<table class="table {{config._class}}">
+    <thead>
+        <tr>
+            {% for head in config.header %}
+                <th {% if head._class %} class="{{head._class}}" {% endif %}>{{head.text | safe}}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for line in config.data %}
+            <tr>
+                {% for column in line %}
+                    <td {% if column._class %} class="{{column._class}}" {% endif %}>{{column.text | safe}}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}
+
+{% macro pagination(config, url) %}
+{% if (config.pageCount > 1) %}
+    <ul class="pagination {{config._class}}">
+        <li><a href="{{url}}page=1">&laquo;</a></li>
+        {% for i in range(config.left, config.right) %}
+            {% if i == config.currentPage %}
+                <li class="active"><a href="{{url}}page={{i+1}}"><span>{{i+1}}<span class="sr-only">(current)</span></span></a></li>
+            {% else %}
+                <li><a href="{{url}}page={{i+1}} ">{{i+1}}</a></li>
+            {% endif %}
+        {% endfor %}
+        <li><a href="{{url}}page={{config.pageCount}}">&raquo;</a></li>
+    </ul>
+{% endif %}
+{% endmacro %}
+
+
+{% macro datatable(config) %}
+    {{ table(config.table, config.urlNoOrder)}}
+    {{ pagination(config.pagination, config.urlNoPage)}}
+{% endmacro %}
