@@ -46,7 +46,10 @@ function syncronizedInit() {
         }
     }
 }
-
+/**
+ * This class defines the basic class for any controllers. It implements a lot
+ * of utility methods in order to correctly generate any response.
+ */
 export class BaseController {
     public app: App;
     private _metadata: LynxControllerMetadata;
@@ -60,12 +63,30 @@ export class BaseController {
         syncronizedInit();
     }
 
+    /**
+     * This method is called only when the constructed has been completed.
+     * Since this method is async, it can be used to perform some initialization
+     * that needed the use of the await keyword.  */
     async postConstructor() {}
 
+    /**
+     * This method generate an url to a route starting from the route name and
+     * optionally its parameters.
+     * If a parameter not is used to generate the route url, it will be appended
+     * as a query parameter.
+     * @param name the name of the route
+     * @param parameters a plain object containing the paramters for the route.
+     */
     public route(name: string, parameters?: any): string {
         return this.app.route(name, parameters);
     }
 
+    /**
+     * Generate a web page starting from a template and using a generated context.
+     * @param view the name of the view
+     * @param req the request object
+     * @param context a plain object containing any necessary data needed by the view
+     */
     public render(
         view: string,
         req: express.Request,
@@ -81,10 +102,20 @@ export class BaseController {
         return new RenderResponse(view, context);
     }
 
+    /**
+     * Redirect the current route to another
+     * @param routeName the new of the target route
+     */
     public redirect(routeName: string): RedirectResponse {
         return new RedirectResponse(this.route(routeName));
     }
 
+    /**
+     * Generate a response suitable to file download. This method can also be
+     * used to generate images of specific dimensions.
+     * @param path the string path of the file, or a Media object to be downloaded
+     * @param options options to correctly generate the output file
+     */
     public download(path: string | Media, options?: FileOptions): FileResponse {
         if (path instanceof Media) {
             if (path.isDirectory) {
@@ -100,10 +131,25 @@ export class BaseController {
         return new FileResponse(path);
     }
 
+    /**
+     * Generate an unauthorized response.
+     */
     public unauthorized(): UnauthorizedResponse {
         return new UnauthorizedResponse();
     }
 
+    /**
+     * Utility method to send an email from a controller. This method is async,
+     * so use the await keyword (or eventually a promise) to correctly read the
+     * return value.
+     * This method uses the template engine to compile the email.
+     * @param req the current request
+     * @param dest the email destination (can also be an array of addresses)
+     * @param subjectTemplateString the subject of the email, that can also be a string template
+     * @param textTemplate the text version of the email, referencing a path in the view folders
+     * @param htmlTemplate the html version of the email, referencing a path in the view folders
+     * @param context a plain object containing any necessary data needed by the view
+     */
     public async sendMail(
         req: express.Request,
         dest: string | string[],
@@ -151,6 +197,11 @@ export class BaseController {
         return false;
     }
 
+    /**
+     * Utility method to obtain a translated string.
+     * @param str the string key to be transalted
+     * @param req the original request
+     */
     public tr(str: string, req: Request): string {
         return this.app.translate(str, req);
     }
