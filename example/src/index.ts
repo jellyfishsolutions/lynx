@@ -1,5 +1,4 @@
-import App from "../lynx/app";
-import { ConfigBuilder } from "../lynx/config";
+import { App, ConfigBuilder } from "lynx-framework";
 
 const port = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV == "production";

@@ -1,7 +1,7 @@
-import { BaseController } from "../../lynx/base.controller";
-import Request from "../../lynx/request";
-import Response from "../../lynx/render.response";
-import { Route, GET, API } from "../../lynx/decorators";
+import { BaseController } from "lynx-framework/base.controller";
+import Request from "lynx-framework/request";
+import Response from "lynx-framework/lynx/response";
+import { Route, GET, API } from "lynx-framework/decorators";
 
 @Route("/")
 export default class MainController extends BaseController {
