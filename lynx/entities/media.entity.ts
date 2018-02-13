@@ -37,13 +37,13 @@ export default class Media extends BaseEntity {
     @Column() fileName: string;
     @Column() path: string;
 
-    @ManyToOne(type => Media, media => media._children)
+    @ManyToOne(_ => Media, media => media._children)
     parent: Media;
 
-    @OneToMany(type => Media, media => media.parent)
+    @OneToMany(_ => Media, media => media.parent)
     _children: Media[];
 
-    @ManyToOne(type => User, user => user.media, { eager: true })
+    @ManyToOne(_ => User, user => user.media, { eager: true })
     owner: User;
 
     get children(): Promise<Media[]> {

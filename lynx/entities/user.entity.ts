@@ -36,12 +36,12 @@ export default class User extends BaseEntity {
     @GraphField()
     nickName: string;
 
-    @ManyToMany(type => Role, role => role.users, { eager: true })
+    @ManyToMany(_ => Role, role => role.users, { eager: true })
     @JoinTable()
     @GraphField({ type: "[Role]" })
     roles: Role[];
 
-    @OneToMany(type => Media, media => media.owner)
+    @OneToMany(_ => Media, media => media.owner)
     media: Media[];
 
     hiddenFields = ["password"];

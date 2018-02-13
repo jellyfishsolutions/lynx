@@ -42,7 +42,7 @@ export default class FileResponse extends Response {
      * This method can eventually perform some transformation on output if a
      * FileOptions was specified.
      */
-    performResponse(req: ERequest, res: EResponse) {
+    performResponse(_: ERequest, res: EResponse) {
         if (this._contentType) {
             res.contentType(this._contentType);
         }

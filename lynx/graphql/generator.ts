@@ -1,5 +1,5 @@
 import { GraphQLSchema } from "graphql";
-import { EntityMetadata, FieldMetadata } from "./decorators";
+import { EntityMetadata } from "./decorators";
 import * as fs from "fs";
 import * as pluralize from "pluralize";
 import { getRepository } from "typeorm";

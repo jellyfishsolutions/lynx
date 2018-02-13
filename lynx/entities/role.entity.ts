@@ -31,6 +31,6 @@ export default class Role extends BaseEntity {
     @GraphField()
     level: number;
 
-    @ManyToMany(type => User, user => user.roles)
+    @ManyToMany(_ => User, user => user.roles)
     users: User[];
 }

@@ -171,7 +171,7 @@ function generateMiddlewareCallback(middleware: BaseMiddleware) {
         argsValues.push(res);
         f
             .apply(middleware, argsValues)
-            .then((r: any) => {
+            .then((_: any) => {
                 next();
             })
             .catch((error: Error) => {
