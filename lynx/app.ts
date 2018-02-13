@@ -303,14 +303,17 @@ export default class App {
     private loadMiddlewares(path: string) {
         const middlewares = fs.readdirSync(path);
         for (let index in middlewares) {
+            let currentFilePath = path + "/" + middlewares[index];
+            if (fs.lstatSync(currentFilePath).isDirectory()) {
+                this.loadMiddlewares(currentFilePath);
+                continue;
+            }
             if (middlewares[index].endsWith("ts")) continue;
-            const midd = require(path + "/" + middlewares[index]);
+            const midd = require(currentFilePath);
             if (!midd.default) {
                 throw new Error(
                     "Plese define the middleware as the export default class in file " +
-                        path +
-                        "/" +
-                        middlewares[index] +
+                        currentFilePath +
                         "."
                 );
             }
@@ -321,14 +324,17 @@ export default class App {
     private loadControllers(path: string) {
         const files = fs.readdirSync(path);
         for (let index in files) {
+            let currentFilePath = path + "/" + files[index];
+            if (fs.lstatSync(currentFilePath).isDirectory()) {
+                this.loadControllers(currentFilePath);
+                continue;
+            }
             if (files[index].endsWith("ts")) continue;
-            const ctrl = require(path + "/" + files[index]);
+            const ctrl = require(currentFilePath);
             if (!ctrl.default) {
                 throw new Error(
                     "Plese define the controller as the export default class in file " +
-                        path +
-                        "/" +
-                        files[index] +
+                        currentFilePath +
                         "."
                 );
             }
