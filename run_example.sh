@@ -1,3 +1,3 @@
 gulp build
-cd build/Release/example
+cd dist
 node index

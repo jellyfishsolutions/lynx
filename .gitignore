@@ -60,3 +60,4 @@ typings/
 *.rdb
 
 !package.json
+dist/

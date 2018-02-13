@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "es5",
         "lib": ["es2015", "esnext.asynciterable"],
-        "outDir": "build/Release",
+        "outDir": "dist",
         "module": "commonjs",
         "declaration": true,
         "noImplicitAny": true,
@@ -20,5 +20,5 @@
     },
     "compileOnSave": true,
     "buildOnSave": true,
-    "include": ["lynx/**/*", "example/**/*"]
+    "include": ["lynx/**/*"]
 }
