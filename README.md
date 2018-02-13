@@ -30,6 +30,12 @@ With Lynx, you will have the following functionality out of the box:
 * GraphQL (queries and mutations!) automatically generated based on your Database entities and decoration.
 * datatables, directly integrated on the template engine, with pagination, filtering and ordering.
 
+## Installation
+
+```
+npm install lynx-framework
+```
+
 ## Lynx application structure
 
 A Lynx application shall be formed by different folders:
@@ -68,8 +74,7 @@ The project structure can be customized.
 To start a Lynx application, it is necessary to instantiate a Lynx `App` object. For example, the `index.ts` file can be:
 
 ```
-import App from "lynx/app";
-import { ConfigBuilder } from "lynx/config";
+import { App, ConfigBuilder } from "lynx-framework/app";
 
 const port = Number(process.env.PORT) || 3000;
 
@@ -92,8 +97,8 @@ Moreover, the file should be named as `controllerName.controller.ts`.
 The minimum configuration of a controller is the following:
 
 ```
-import { Route } from "lynx/decorators";
-import BaseController from "lynx/base.controller";
+import { Route } from "lynx-framework/decorators";
+import BaseController from "lynx-framework/base.controller";
 
 @Route("/myController/path")
 export default class MyController extends BaseController {
@@ -188,7 +193,7 @@ is automatically wrapped inside a `ValidateObject`, that is verified using a [JO
 Example:
 
 ```
-import { ValidateObject } from "lynx/validate-object";
+import { ValidateObject } from "lynx-framework/validate-object";
 import * as Joi from "joi";
 
 const loginSchema = Joi.object().keys({
