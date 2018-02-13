@@ -58,3 +58,5 @@ typings/
 .env
 
 *.rdb
+
+!package.json
