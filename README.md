@@ -30,6 +30,56 @@ With Lynx, you will have the following functionality out of the box:
 * GraphQL (queries and mutations!) automatically generated based on your Database entities and decoration.
 * datatables, directly integrated on the template engine, with pagination, filtering and ordering.
 
+## Lynx application structure
+
+A Lynx application shall be formed by different folders:
+
+```
+.
+├── controllers
+│   ├── backoffice
+│   │   └── main.controller.ts
+│   └── main.controller.ts
+├── entities
+├── index.ts
+├── libs
+├── locale
+│   ├── en.json
+│   └── it.json
+├── middlewares
+│   └── always.middleware.ts
+├── public
+└── views
+    └── main.njk
+```
+
+* The `controllers` folder shall contain (with subfolder support) any controllers.
+* The `entities` folder shall contain any entities, that will be automatically mapped with `TypeORM`.
+* The `libs` folder shall contain any additional libraries or utility functions, that can be used by controllers and middlewares.
+* The `local` folder shall contains localization file formatted as key-value JSON file.
+* The `middlewares` folder shall contain (with subfolder support) any middleware.
+* The `public` folder shall contain all the public resources, such as images, css and so on.
+* The `view` folder shall contain the nunjucks templates. An `emails` subfolder, containing the email templates, is recommended.
+
+The project structure can be customized.
+
+## Lynx application
+
+To start a Lynx application, it is necessary to instantiate a Lynx `App` object. For example, the `index.ts` file can be:
+
+```
+import App from "lynx/app";
+import { ConfigBuilder } from "lynx/config";
+
+const port = Number(process.env.PORT) || 3000;
+
+const app = new App(new ConfigBuilder(__dirname).build());
+app.startServer(port);
+```
+
+Any Lynx configuration, such as database connection, token secrets, folders and so on, can be customized using the `ConfigBuilder` object.
+Any controllers, middlewares and entities will be automatically loaded by the Lynx app.
+
 ## Controllers
 
 A controller defines a set of endpoints. Any endpoint responds to a specific
@@ -188,3 +238,50 @@ async myEndpoint(id:Number, req: Request, res: Response) {
 #### `postConstructor`
 
 It is possible to override the `postConstructor` methods that will be called after the creation of the controller. This method is `async`, so it is possible to perform asynchronous initialization. Always remember that there will be only ONE instance of any controller in a Lynx application.
+
+## Enhancements to the Nunjucks engine
+
+### `tr` filter
+
+The `tr` filter automatically localize a string. Usage:
+
+```
+<button type="submit" class="btn btn-primary px-4">{{ "button_login" | tr }}</button>
+```
+
+The `button_login` shall be a property in the JSON localized file.
+
+### `json` filter
+
+The `json` filter automatically format an object or variable to JSON.
+
+### `format` filter
+
+The `format` filter format a number to a string, with a fixed number of decimal digits (default: 2).
+Usage:
+
+```
+<span class="price">€ {{price | format}}</span>
+<span class="integer_number">{{ myNumber | format(0) }}
+```
+
+### `route` global function
+
+The `route` function compile a route name to an url with the given parameters.
+If an url is used instead of a route name, the url is still compiled with the given parameters.
+Usage:
+
+```
+<a href="{{route('forgot_password')}}" class="btn btn-link px-0">...</a>
+```
+
+To set the name of a route, use the `Name` decorated to the chosen method.
+
+### `old` global function
+
+The `old` function is used to retrieve the latest value of a form. It can be used to retrieve the value of an input while performing server side form validation. It is also possible to specify a default value.
+Usage:
+
+```
+<input type="email" name="email" class="form-control" value="{{old('email')}}">
+```

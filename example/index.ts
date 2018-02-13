@@ -1,4 +1,5 @@
 import App from "../lynx/app";
+import { ConfigBuilder } from "../lynx/config";
 
 const port = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV == "production";
@@ -35,17 +36,5 @@ let config = {
     uploadPath: __dirname + "/../uploads"
 };
 
-if (isProduction) {
-    config.db.host = "mysql56";
-    config.db.port = 3306;
-    config.db.database = "bike_rental_world";
-    config.db.password = "t3Ff47%&";
-    config.db.username = "root";
-    config.sessionSecret = "bikeRentalWorld65382";
-    config.tokenSecret = "bikeTokenRenaltWorld3284798273";
-    config.uploadPath = "/uploads";
-    config.sessionStore = new myRedisStore({ host: "redis" });
-}
-
-const app = new App(config);
+const app = new App(new ConfigBuilder(__dirname).build());
 app.startServer(port);

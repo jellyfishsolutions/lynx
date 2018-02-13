@@ -9,7 +9,7 @@ import * as bodyParser from "body-parser";
 import * as multer from "multer";
 import * as cors from "cors";
 import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
-import { makeExecutableSchema } from "graphql-tools";
+import Config from "./config";
 
 import * as expressGenerator from "./express-generator";
 import * as graphqlGenerator from "./graphql/generator";
@@ -67,10 +67,19 @@ Object.defineProperty(Array.prototype, "removeHiddenField", {
     }
 });
 
+/**
+ * Utility function to check if we are in the production environment.
+ * @return true if the NODE_ENV is set to "production", false otherwise
+ */
 export function isProduction(): boolean {
     return process.env.NODE_ENV === "production";
 }
 
+/**
+ * Implementation of the tr filer for the nunjucks engine.
+ * It trying to understand the current language from the request. The fallback
+ * uses the defaultLanguage set on the app.
+ */
 function translate(str: string): string {
     try {
         let lang = this.getVariables()["lang"];
@@ -107,7 +116,13 @@ function performTranslation(str: string, translations: any): string {
     }
     return str;
 }
-
+/**
+ * Apply parameters to an URL. If a parameter is not found as path parameter,
+ * it is added as query parameter.
+ * @param url the url to compile
+ * @param parameters a plain object containing the parameters
+ * @return the compiled url
+ */
 function applyParameterstoUrl(url: string, parameters: any): string {
     if (!parameters) {
         return url;
@@ -130,6 +145,12 @@ function applyParameterstoUrl(url: string, parameters: any): string {
     return url;
 }
 
+/**
+ * Transform the route name to a URL and compile it with the given parameters.
+ * @param name the route name (or, eventually, the path)
+ * @param parameters a plain object containing the parameters
+ * @return the compiled url
+ */
 function route(name: string, parameters?: any): string {
     let url = name;
     if (routes[name]) {
@@ -138,45 +159,38 @@ function route(name: string, parameters?: any): string {
     return applyParameterstoUrl(url, parameters);
 }
 
-function old(name: string): string {
+/**
+ * Implementation of the old filter function. This function returns the previous
+ * value of the input form. Fallback to the defaultValue.
+ * @param name the name used in the form
+ * @param defaultValue a fallback value
+ * @return the previous value or defaultValue
+ */
+function old(name: string, defaultValue?: any): string {
     const req = this.ctx.req;
     if (req.body && req.body[name]) {
         return req.body[name];
     }
-    return req.query[name];
+    if (req.query[name]) {
+        return req.query[name];
+    }
+    return defaultValue;
 }
 
+/**
+ * Implementation of the format filter function to format a float number.
+ * By default, the number is formatted with 2 decimal numbers.
+ * @param val the number to format
+ * @param decimal the number of decimal number
+ * @return the formatted number as a string
+ */
 function format(val: number, decimal: number = 2): string {
     return Number(val).toFixed(decimal);
 }
 
-export interface Config {
-    db: {
-        type: string;
-        host: string;
-        port: number;
-        username: string;
-        password: string;
-        database: string;
-        entities: string[];
-        synchronize: boolean;
-        logging: boolean;
-    };
-    publicFolders: string[];
-    viewFolders: string[];
-    translationFolders: string[];
-    middlewaresFolders: string[];
-    controllersFolders: string[];
-    sessionSecret: string;
-    sessionStore?: any;
-    tokenSecret: string;
-    mailer: {
-        sender: string;
-    };
-    defaultLanguage: string;
-    uploadPath: string;
-}
-
+/**
+ * The App class contains the initialization code for a Lynx application.
+ */
 export default class App {
     public express: Express;
     private _config: Config;
