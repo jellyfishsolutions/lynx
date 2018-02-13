@@ -118,7 +118,6 @@ export function generateSchema(entitiesPaths: string[]): GraphQLSchema {
             if (args[LIMIT]) {
                 qb.limit(args[LIMIT]);
             }
-            console.log(qb.getSql());
             return qb.getMany();
         };
 
@@ -168,8 +167,6 @@ export function generateSchema(entitiesPaths: string[]): GraphQLSchema {
     queries = `type Query {\n${queries}}\n`;
     mutators = `type Mutation {\n${mutators}}\n`;
     let typeDefs = `${queries}\n${mutators}\n${schemas}`;
-
-    console.log(typeDefs);
 
     return makeExecutableSchema({
         typeDefs,

@@ -215,20 +215,23 @@ export default class App {
         config.middlewaresFolders.unshift(__dirname + "/middlewares");
         config.viewFolders.unshift(__dirname + "/views");
 
-        createConnection(<any>config.db)
-            .then(_ => {
-                // here you can start to work with your entities
-                console.log("Connection to the db established!");
-                setup(config.db.entities).catch(error => {
-                    console.log(error);
+        if (!config.disabledDb) {
+            createConnection(<any>config.db)
+                .then(_ => {
+                    // here you can start to work with your entities
+                    console.log("Connection to the db established!");
+                    setup(config.db.entities).catch(error => {
+                        console.log(error);
+                        process.exit(1);
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
                     process.exit(1);
                 });
-            })
-            .catch(error => {
-                console.error(error);
-                process.exit(1);
-            });
-
+        } else {
+            console.log("The DB service is disabled");
+        }
         this.express = express();
         this.express.set("app", this);
 
@@ -276,19 +279,21 @@ export default class App {
             this.loadControllers(path);
         }
 
-        const schema = graphqlGenerator.generateSchema(config.db.entities);
-        // The GraphQL endpoint
-        this.express.use(
-            "/graphql",
-            bodyParser.json(),
-            graphqlExpress({ schema })
-        );
+        if (!config.disabledDb) {
+            const schema = graphqlGenerator.generateSchema(config.db.entities);
+            // The GraphQL endpoint
+            this.express.use(
+                "/graphql",
+                bodyParser.json(),
+                graphqlExpress({ schema })
+            );
 
-        // GraphiQL, a visual editor for queries
-        this.express.use(
-            "/graphiql",
-            graphiqlExpress({ endpointURL: "/graphql" })
-        );
+            // GraphiQL, a visual editor for queries
+            this.express.use(
+                "/graphiql",
+                graphiqlExpress({ endpointURL: "/graphql" })
+            );
+        }
     }
 
     private loadTranslations(paths: string[]) {

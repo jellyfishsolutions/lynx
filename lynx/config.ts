@@ -1,4 +1,5 @@
 export default interface Config {
+    disabledDb: boolean;
     db: {
         type: string;
         host: string;
@@ -30,6 +31,7 @@ export class ConfigBuilder {
 
     public constructor(basePath: string) {
         this.config = {
+            disabledDb: false,
             db: {
                 type: "mysql",
                 host: "localhost",
@@ -113,28 +115,38 @@ export class ConfigBuilder {
     }
 
     public setDatabaseType(type: string): ConfigBuilder {
+        this.config.disabledDb = false;
         this.config.db.type = type;
         return this;
     }
 
     public setDatabaseHost(host: string): ConfigBuilder {
+        this.config.disabledDb = false;
         this.config.db.host = host;
         return this;
     }
 
     public setDatabasePort(port: number): ConfigBuilder {
+        this.config.disabledDb = false;
         this.config.db.port = port;
         return this;
     }
 
     public setDatabaseLogin(username: string, password: string): ConfigBuilder {
+        this.config.disabledDb = false;
         this.config.db.username = username;
         this.config.db.password = password;
         return this;
     }
 
     public setDatabase(database: string): ConfigBuilder {
+        this.config.disabledDb = false;
         this.config.db.database = database;
+        return this;
+    }
+
+    public disableDB(): ConfigBuilder {
+        this.config.disabledDb = true;
         return this;
     }
 
