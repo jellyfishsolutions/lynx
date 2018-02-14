@@ -10,6 +10,7 @@ import * as multer from "multer";
 import * as cors from "cors";
 import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
 import Config from "./config";
+import BaseModule from "./base.module";
 
 import * as expressGenerator from "./express-generator";
 import * as graphqlGenerator from "./graphql/generator";
@@ -189,6 +190,26 @@ function format(val: number, decimal: number = 2): string {
 }
 
 /**
+ * Implementation of the resolvePath global function. Using this function, it is
+ * possible to refer to any views with a virtual folder containing all the available
+ * views.
+ * @param path the virtual absolute path of the view
+ * @return the absolute path of the view if resolved, or the original path otherwise
+ */
+function resolvePath(path: string): string {
+    let normalizedPath = path;
+    if (normalizedPath.endsWith(".njk")) {
+        normalizedPath = normalizedPath.substring(0, normalizedPath.length - 4);
+    }
+    let app: App = this.ctx.req.app.get("app");
+    let resolved = app.templateMap[path];
+    if (resolved) {
+        return resolved;
+    }
+    return path;
+}
+
+/**
  * The App class contains the initialization code for a Lynx application.
  */
 export default class App {
@@ -196,9 +217,14 @@ export default class App {
     private _config: Config;
     private _nunjucksEnvironment: nunjucks.Environment;
     private _upload: multer.Instance;
+    private _templateMap: any;
 
     get config(): Config {
         return this._config;
+    }
+
+    get templateMap(): any {
+        return this._templateMap;
     }
 
     get nunjucksEnvironment(): nunjucks.Environment {
@@ -209,8 +235,15 @@ export default class App {
         return this._upload;
     }
 
-    constructor(config: Config) {
+    constructor(config: Config, modules?: BaseModule[]) {
         this._config = config;
+
+        if (modules) {
+            for (let module of modules) {
+                module.mount(this._config);
+            }
+        }
+
         config.db.entities.unshift(__dirname + "/entities/*.entity.js");
         config.middlewaresFolders.unshift(__dirname + "/middlewares");
         config.viewFolders.unshift(__dirname + "/views");
@@ -260,6 +293,8 @@ export default class App {
         for (let folder of config.publicFolders) {
             this.express.use(express.static(folder));
         }
+
+        this.generateTemplateMap(config.viewFolders);
         this._nunjucksEnvironment = nunjucks.configure(config.viewFolders, {
             autoescape: true,
             watch: true,
@@ -271,6 +306,7 @@ export default class App {
         this.loadTranslations(config.translationFolders);
         this._nunjucksEnvironment.addGlobal("route", route);
         this._nunjucksEnvironment.addGlobal("old", old);
+        this._nunjucksEnvironment.addGlobal("resolvePath", resolvePath);
 
         for (let path of config.middlewaresFolders) {
             this.loadMiddlewares(path);
@@ -293,6 +329,29 @@ export default class App {
                 "/graphiql",
                 graphiqlExpress({ endpointURL: "/graphql" })
             );
+        }
+    }
+
+    private recursiveGenerateTemplateMap(path: string, currentPath: string) {
+        const files = fs.readdirSync(path);
+        for (let index in files) {
+            let currentFilePath = path + "/" + files[index];
+            if (fs.lstatSync(currentFilePath).isDirectory()) {
+                this.recursiveGenerateTemplateMap(
+                    currentFilePath,
+                    currentPath + files[index] + "/"
+                );
+                continue;
+            }
+            let name = files[index].replace(".njk", "");
+            this._templateMap[currentPath + name] = currentFilePath;
+        }
+    }
+
+    private generateTemplateMap(paths: string[]) {
+        this._templateMap = {};
+        for (let path of paths) {
+            this.recursiveGenerateTemplateMap(path, "/");
         }
     }
 
