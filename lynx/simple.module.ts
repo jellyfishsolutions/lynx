@@ -2,19 +2,19 @@ import BaseModule from "./base.module";
 
 export default class SimpleModule extends BaseModule {
     get controllers(): string {
-        return __dirname + "controllers";
+        return "";
     }
     get middlewares(): string {
-        return __dirname + "middlewares";
+        return "";
     }
     get translation(): string {
-        return __dirname + "locale";
+        return "";
     }
     get views(): string {
-        return __dirname + "views";
+        return "";
     }
 
     get public(): string {
-        return __dirname + "public";
+        return "";
     }
 }
