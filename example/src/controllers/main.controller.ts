@@ -10,6 +10,14 @@ export default class MainController extends BaseController {
         return this.render("main", req, { username: "Boris" });
     }
 
+    @GET("/prova")
+    async getProva(req: Request): Promise<Response> {
+        return this.render("auth/login", req, {
+            username: "Boris",
+            masterTemplatePath: "/layouts/base"
+        });
+    }
+
     @API()
     @GET("/api")
     async getApi() {

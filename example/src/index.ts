@@ -1,10 +1,13 @@
 import { App, ConfigBuilder } from "lynx-framework";
+import Config from "lynx-framework/config";
 
 const port = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV == "production";
 
 import * as session from "express-session";
 import * as redisStore from "connect-redis";
+
+import AuthModule from "lynx-auth";
 
 let myRedisStore = redisStore(session);
 
@@ -35,5 +38,9 @@ let config = {
     uploadPath: __dirname + "/../uploads"
 };
 
-const app = new App(new ConfigBuilder(__dirname).build());
+let myConfig = new ConfigBuilder(__dirname).build();
+AuthModule.settings.controllerPath = "/autenticazione";
+AuthModule.settings.context.masterTemplatePath = "/layouts/base";
+
+const app = new App(myConfig, [new AuthModule()]);
 app.startServer(port);

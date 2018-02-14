@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- Styles required by this views -->
+  {% block additional_styles %}
+  {% endblock %}
+
+</head>
+
+    <h1>I'm the master page, son!</h1>
+
+    {% block main_content %}
+    {% endblock %}
+
+
+    {% include resolvePath('/auth/login.component') %}
+
+
+    {% block additional_scripts %}
+    {% endblock %}
+</html>
