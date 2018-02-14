@@ -5,6 +5,7 @@ export default abstract class BaseModule {
     abstract get middlewares(): string;
     abstract get translation(): string;
     abstract get views(): string;
+    abstract get public(): string;
 
     public mount(config: Config) {
         if (this.controllers) {
@@ -19,6 +20,8 @@ export default abstract class BaseModule {
         if (this.views) {
             config.viewFolders.unshift(this.views);
         }
+        if (this.public) {
+            config.publicFolders.unshift(this.public);
+        }
     }
 }
-

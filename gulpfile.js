@@ -23,14 +23,8 @@ gulp.task("default", function() {
 
 gulp.task("copy", function() {
     return gulp
-        .src(["linx/**", "!linx/**/*.ts"])
-        .pipe(gulp.dest(config.compilerOptions.outDir + "/linx"));
-});
-
-gulp.task("copy_example", function() {
-    return gulp
-        .src(["example/**", "!example/**/*.ts"])
-        .pipe(gulp.dest(config.compilerOptions.outDir + "/example"));
+        .src(["lynx/**", "!lynx/**/*.ts"])
+        .pipe(gulp.dest(config.compilerOptions.outDir));
 });
 
 gulp.task("clean", function() {

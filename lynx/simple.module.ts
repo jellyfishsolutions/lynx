@@ -13,4 +13,8 @@ export default class SimpleModule extends BaseModule {
     get views(): string {
         return __dirname + "views";
     }
+
+    get public(): string {
+        return __dirname + "public";
+    }
 }
