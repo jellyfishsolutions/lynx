@@ -72,4 +72,17 @@ export class ValidateObject<T> {
         }
         return errors;
     }
+
+    /**
+     * Getter that returns a map of errors. This prop contains the save information
+     * as the `errors` prop, but with a different format.
+     * @return a map or loclaized errors.
+     */
+    get errorsMap(): any {
+        let map: any = {};
+        for (let err of this.errors) {
+            map[err.name] = err.message;
+        }
+        return map;
+    }
 }

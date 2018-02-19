@@ -266,8 +266,19 @@ The `format` filter format a number to a string, with a fixed number of decimal 
 Usage:
 
 ```
-<span class="price">€ {{price | format}}</span>
+<span class="price">€ {{ price | format }}</span>
 <span class="integer_number">{{ myNumber | format(0) }}
+```
+
+### `date` filter
+
+The `date` filter format a date to a string, using the `moment`. The default format will use the
+`lll` format, but it is possible to override this behavior.
+Usage:
+
+```
+<span class="date">€ {{ data.createdAt | date }}</span>
+<span class="my_date_custom">{{ data.createdAt | date("YYYY-MM-DD") }}
 ```
 
 ### `route` global function

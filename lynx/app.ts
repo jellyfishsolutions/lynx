@@ -8,6 +8,7 @@ import * as session from "express-session";
 import * as bodyParser from "body-parser";
 import * as multer from "multer";
 import * as cors from "cors";
+import * as moment from "moment";
 import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
 import Config from "./config";
 import BaseModule from "./base.module";
@@ -17,7 +18,6 @@ import * as graphqlGenerator from "./graphql/generator";
 
 import { setup } from "./entities/setup";
 import User from "./entities/user.entity";
-
 import { sign } from "jsonwebtoken";
 
 const translations: any = {};
@@ -117,6 +117,22 @@ function performTranslation(str: string, translations: any): string {
     }
     return str;
 }
+/**
+ * Implementation of the date filter using moment.
+ * The default implementation uses the "lll" string format, resulting in
+ * Feb 19, 2018 4:57 PM in English.
+ * @param d the date to format
+ * @param format the string to format the date, default to lll
+ * @return the formatted date
+ */
+function date(d: Date, format?: string): string {
+    let m = moment(d);
+    if (!format) {
+        format = "lll";
+    }
+    return m.format(format);
+}
+
 /**
  * Apply parameters to an URL. If a parameter is not found as path parameter,
  * it is added as query parameter.
@@ -303,6 +319,7 @@ export default class App {
         this._nunjucksEnvironment.addFilter("tr", translate);
         this._nunjucksEnvironment.addFilter("json", JSON.stringify);
         this._nunjucksEnvironment.addFilter("format", format);
+        this._nunjucksEnvironment.addFilter("date", date);
         this.loadTranslations(config.translationFolders);
         this._nunjucksEnvironment.addGlobal("route", route);
         this._nunjucksEnvironment.addGlobal("old", old);

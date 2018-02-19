@@ -36,7 +36,7 @@ export class TableConfiguration {
 
 export class PaginationConfiguration {
     total = 0;
-    pageSize = 2;
+    pageSize = 10;
     pageCount = 0;
     currentPage = 0;
     left = 0;
@@ -77,6 +77,10 @@ export class DatatableConfiguration {
         this.setupPageRequested();
         this.urlNoPage = getUrlWithoutPage(this.req);
         this.urlNoOrder = getUrlWithoutOrder(this.req);
+    }
+
+    public setPageSize(size: number) {
+        this.pagination.pageSize = size;
     }
 
     public addTableClass(_class: string): DatatableConfiguration {
