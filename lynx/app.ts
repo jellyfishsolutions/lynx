@@ -268,9 +268,8 @@ export default class App {
         this._config = config;
 
         if (modules) {
-            for (let module of modules) {
-                module.mount(this._config);
-            }
+            let sanitizedModules = new Set(modules);
+            sanitizedModules.forEach(module => module.mount(this._config));
         }
 
         config.db.entities.unshift(__dirname + "/entities/*.entity.js");
