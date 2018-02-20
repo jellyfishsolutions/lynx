@@ -1,0 +1,25 @@
+{% macro printError(errors, label) %}
+{% if errors[label] %}
+    <div class="invalid-feedback">
+        {{ errors[label] }}
+    </div>
+{% endif %}
+{% endmacro %}
+
+{% macro addInput(id, label, type, name, old, placeholder, errors, generics) %}
+<div class="form-group">
+    <label for="{{id}}">{{label}}</label>
+    <input type="{{type}}" class="form-control {{'is-invalid' if errors[name]}}" id="{{id}}" name="{{name}}" value="{{old}}" placeholder="{{placeholder}}" {{generics | safe}}>
+    {{ printError(errors, name) }}
+</div>
+{% endmacro %}
+
+{% macro alert(flash) %}
+{% if (flash) and (flash.length>0) %}
+    {% for msg in flash %}
+    <div class="alert alert-{{msg.type | safe}}" role="alert">
+        {{msg.message}}
+    </div>
+    {% endfor %}
+{% endif %}
+{% endmacro %}

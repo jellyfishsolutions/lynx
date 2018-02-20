@@ -8,6 +8,7 @@ export class Element {
 
 export class TableConfiguration {
     _class: string = "";
+    ordersBy: Number[] = [];
     header: Element[] = [];
     data: Element[][] = [];
 
@@ -18,6 +19,7 @@ export class TableConfiguration {
 
     addHeader(text: string, _class?: string): TableConfiguration {
         this.header.push({ text: text, _class: _class ? _class : "" });
+        this.ordersBy.push(0);
         return this;
     }
 
@@ -45,8 +47,7 @@ export class PaginationConfiguration {
     _class: string = "";
 
     calculate() {
-        this.pageCount = this.total / this.pageSize;
-
+        this.pageCount = Math.ceil(this.total / this.pageSize);
         this.left = Math.max(0, this.currentPage - this.maxPages);
         this.right = Math.min(
             this.pageCount,
@@ -64,8 +65,10 @@ export class DatatableConfiguration {
     private table: TableConfiguration = new TableConfiguration();
     private repository: Repository<any>;
     private req: Request;
-    private urlNoPage: string;
-    private urlNoOrder: string;
+    protected urlNoPage: string;
+    protected urlNoOrder: string;
+    protected urlNoPageNoOrder: string;
+    protected urlNoFilter: string;
     private map: string[];
     private _classes: string[] = [];
     private mapTransformers: any = {};
@@ -77,6 +80,8 @@ export class DatatableConfiguration {
         this.setupPageRequested();
         this.urlNoPage = getUrlWithoutPage(this.req);
         this.urlNoOrder = getUrlWithoutOrder(this.req);
+        this.urlNoPageNoOrder = getUrlWithoutPageOrOrder(this.req);
+        this.urlNoFilter = getUrlWithoutFilter(this.req);
     }
 
     public setPageSize(size: number) {
@@ -152,14 +157,16 @@ export class DatatableConfiguration {
         query: SelectQueryBuilder<any>
     ): SelectQueryBuilder<any> {
         let ordersBy = this.getQueryValue("orderby");
-        if (ordersBy.length) {
+        if (ordersBy.length > 0) {
             let order = ordersBy[0].split(":");
+            this.setOrderBy(order[0], order[1]);
             query = query.orderBy(
                 "e." + order[0],
                 order[1] == "desc" ? "DESC" : "ASC"
             );
             for (let i = 1; i < ordersBy.length; i++) {
                 let order = ordersBy[i].split(":");
+                this.setOrderBy(order[0], order[1]);
                 query = query.addOrderBy(
                     "e." + order[0],
                     order[1] == "desc" ? "DESC" : "ASC"
@@ -167,6 +174,14 @@ export class DatatableConfiguration {
             }
         }
         return query;
+    }
+
+    private setOrderBy(column: string, order: string) {
+        for (let i = 0; i < this.map.length; i++) {
+            if (this.map[i] == column) {
+                this.table.ordersBy[i] = order == "desc" ? -1 : 1;
+            }
+        }
     }
 
     private addFilterBy(
@@ -230,17 +245,34 @@ export class DatatableConfiguration {
 }
 
 function getUrlWithoutPage(req: Request): string {
-    return getUrlWithoutParameter(req, "page");
+    return getUrlWithoutParameter(req, ["page"]);
 }
 
 function getUrlWithoutOrder(req: Request): string {
-    return getUrlWithoutParameter(req, "orderby");
+    return getUrlWithoutParameter(req, ["orderby"]);
 }
 
-function getUrlWithoutParameter(req: Request, parameter: string): string {
+function getUrlWithoutPageOrOrder(req: Request): string {
+    return getUrlWithoutParameter(req, ["orderby", "page"]);
+}
+
+function getUrlWithoutFilter(req: Request): string {
+    return getUrlWithoutParameter(req, ["filter", "filterby"]);
+}
+
+function getUrlWithoutParameter(req: Request, parameters: string[]): string {
     let u = (req.baseUrl + req.path).replace(/\/$/, "") + "?";
     for (let key in req.query) {
-        if (key.toLowerCase() == parameter) continue;
+        var found = false;
+        for (let p of parameters) {
+            if (key.toLowerCase() == p) {
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            continue;
+        }
         u += generateQueryValue(key, req.query[key]);
     }
     return u;

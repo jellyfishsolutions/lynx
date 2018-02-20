@@ -20,6 +20,11 @@ export class ValidateObject<T> {
     private schema: Joi.Schema;
     private valid: Joi.ValidationResult<any>;
 
+    /**
+     * @param obj the object to validate
+     * @param schema the schema
+     * @param locales an array of available language. You can use the `req.acceptsLanguages()`
+     */
     constructor(obj: any, schema: Joi.Schema, locales: string[]) {
         this._obj = obj;
         this.schema = schema;
