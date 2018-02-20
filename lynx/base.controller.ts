@@ -46,6 +46,44 @@ function syncronizedInit() {
         }
     }
 }
+
+export enum FlashType {
+    primary,
+    secondary,
+    success,
+    danger,
+    warning,
+    info,
+    light,
+    dark
+}
+
+function mapFlashTypeToString(type: FlashType): string {
+    switch (type) {
+        case FlashType.primary:
+            return "primary";
+        case FlashType.secondary:
+            return "secondary";
+        case FlashType.success:
+            return "success";
+        case FlashType.danger:
+            return "danger";
+        case FlashType.warning:
+            return "warning";
+        case FlashType.info:
+            return "info";
+        case FlashType.light:
+            return "light";
+        case FlashType.dark:
+            return "dark";
+    }
+}
+
+export interface FlashMessage {
+    type: FlashType;
+    message: string;
+}
+
 /**
  * This class defines the basic class for any controllers. It implements a lot
  * of utility methods in order to correctly generate any response.
@@ -99,6 +137,8 @@ export class BaseController {
             context = {};
         }
         context.req = req;
+        context.flash = (req.session as any).sessionFlash;
+        delete (req.session as any).sessionFlash;
         return new RenderResponse(view, context);
     }
 
@@ -108,6 +148,40 @@ export class BaseController {
      */
     public redirect(routeName: string): RedirectResponse {
         return new RedirectResponse(this.route(routeName));
+    }
+
+    /**
+     * Add a flash message in the current request.
+     * @param msg the FlashMessage to be included
+     * @param req the request
+     */
+    public addFlashMessage(msg: FlashMessage, req: Request) {
+        let session = req.session as any;
+        if (!session.sessionFlash) {
+            session.sessionFlash = [];
+        }
+        session.sessionFlash.push({
+            type: mapFlashTypeToString(msg.type),
+            message: this.tr(msg.message, req)
+        });
+    }
+
+    /**
+     * Add a success flash message in the current request.
+     * @param msg the string (can be localized) of the message
+     * @param req the request
+     */
+    public addSuccessMessagge(msg: string, req: Request) {
+        this.addFlashMessage({ type: FlashType.success, message: msg }, req);
+    }
+
+    /**
+     * Add an error flash message in the current request.
+     * @param msg the string (can be localized) of the message
+     * @param req the request
+     */
+    public addErrorMessage(msg: string, req: Request) {
+        this.addFlashMessage({ type: FlashType.danger, message: msg }, req);
     }
 
     /**

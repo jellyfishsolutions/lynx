@@ -9,6 +9,7 @@ import * as bodyParser from "body-parser";
 import * as multer from "multer";
 import * as cors from "cors";
 import * as moment from "moment";
+const flash = require("express-flash");
 import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
 import Config from "./config";
 import BaseModule from "./base.module";
@@ -126,7 +127,19 @@ function performTranslation(str: string, translations: any): string {
  * @return the formatted date
  */
 function date(d: Date, format?: string): string {
-    let m = moment(d);
+    let lang = this.getVariables()["lang"];
+    if (!lang) {
+        const req: express.Request = this.ctx.req;
+        lang = req.acceptsLanguages()[0];
+        if (lang === "*") {
+            lang = null;
+        }
+    }
+    if (!lang) {
+        let app: App = this.ctx.req.app.get("app");
+        lang = app.config.defaultLanguage;
+    }
+    let m = moment(d).locale(lang);
     if (!format) {
         format = "lll";
     }
@@ -303,6 +316,7 @@ export default class App {
         }
         let app_session = session(app_session_options);
         this.express.use(app_session);
+        this.express.use(flash());
 
         this._upload = multer({ dest: config.uploadPath });
 

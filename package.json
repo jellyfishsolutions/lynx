@@ -1,6 +1,6 @@
 {
     "name": "lynx-framework",
-    "version": "0.1.9",
+    "version": "0.1.10",
     "description":
         "lynx is a NodeJS framework for Web Development, based on decorators and the async/await support.",
     "repository": {
@@ -53,6 +53,7 @@
         "connect-redis": "^3.3.2",
         "cors": "^2.8.4",
         "express": "^4.16.2",
+        "express-flash": "0.0.2",
         "express-session": "^1.15.6",
         "fs-extra": "^5.0.0",
         "graphql": "^0.13.0",
