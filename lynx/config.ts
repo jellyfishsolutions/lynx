@@ -10,6 +10,7 @@ export default interface Config {
         entities: string[];
         synchronize: boolean;
         logging: boolean;
+        hasCustomUserEntity: boolean;
     };
     publicFolders: string[];
     viewFolders: string[];
@@ -41,7 +42,8 @@ export class ConfigBuilder {
                 database: "koa_typescript2",
                 entities: [basePath + "/entities/*.entity.js"],
                 synchronize: true,
-                logging: false
+                logging: false,
+                hasCustomUserEntity: false
             },
             publicFolders: [basePath + "/public"],
             viewFolders: [basePath + "/views"],
@@ -152,6 +154,11 @@ export class ConfigBuilder {
 
     public setMailerSender(address: string): ConfigBuilder {
         this.config.mailer.sender = address;
+        return this;
+    }
+
+    public setCustomUserEntity(hasCustom: boolean): ConfigBuilder {
+        this.config.db.hasCustomUserEntity = hasCustom;
         return this;
     }
 
