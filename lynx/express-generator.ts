@@ -4,7 +4,7 @@ import Response from "./response";
 import { ValidateObject } from "./validate-object";
 import { HttpVerb } from "./http-verb";
 import { LynxControllerMetadata, LynxRouteMetadata } from "./decorators";
-import { BaseMiddleware } from "./base.middleware";
+import { BaseMiddleware, BLOCK_CHAIN } from "./base.middleware";
 
 function retrieveArgumentsNamesFromRoute(path: string) {
     const args = [];
@@ -171,7 +171,10 @@ function generateMiddlewareCallback(middleware: BaseMiddleware) {
         argsValues.push(res);
         f
             .apply(middleware, argsValues)
-            .then((_: any) => {
+            .then((r: any) => {
+                if (r === BLOCK_CHAIN) {
+                    return;
+                }
                 next();
             })
             .catch((error: Error) => {
