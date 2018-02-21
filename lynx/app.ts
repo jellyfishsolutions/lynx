@@ -266,7 +266,6 @@ export default class App {
 
     constructor(config: Config, modules?: BaseModule[]) {
         this._config = config;
-        App.self = this;
 
         if (modules) {
             let sanitizedModules = new Set(modules);
@@ -483,10 +482,5 @@ export default class App {
         return sign({ id: user.id }, this._config.tokenSecret, {
             expiresIn: "1y"
         });
-    }
-
-    private static self: App;
-    static get(): App {
-        return App.self;
     }
 }

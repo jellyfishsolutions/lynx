@@ -10,9 +10,14 @@ import BaseEntity from "./base.entity";
 import Role from "./role.entity";
 import Media from "./media.entity";
 import { GraphQL, GraphField } from "../graphql/decorators";
-import App from "../app";
 
-@Entity("users", { skipSync: !App.get().config.db.hasCustomUserEntity })
+let SKIP_SYNC = false;
+
+export function setSkipSync(skip: boolean) {
+    SKIP_SYNC = skip;
+}
+
+@Entity("users", { skipSync: SKIP_SYNC })
 @GraphQL()
 export default class User extends BaseEntity {
     @PrimaryGeneratedColumn()
