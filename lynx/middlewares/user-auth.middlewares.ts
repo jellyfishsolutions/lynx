@@ -20,7 +20,12 @@ export default class UserAuthMiddleware extends BaseMiddleware {
     }
 
     async apply(req: express.Request, _: express.Response) {
-        let user = await userLib.retrieveUserFromSession(req);
+        let user;
+        try {
+            user = await userLib.retrieveUserFromSession(req);
+        } catch (err) {
+            return;
+        }
         if (user) {
             (<any>req).user = user;
             return;
