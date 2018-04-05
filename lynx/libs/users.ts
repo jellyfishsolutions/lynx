@@ -21,7 +21,7 @@ export async function hashPassword(plainPassword: string): Promise<string> {
  * This method support async/await
  * @param plainPassword the plain text password
  * @param hashPassword the encrypted (or hashed) password
- * @return a primise, true if the two passwords match, false otherwise
+ * @return a promise, true if the two passwords match, false otherwise
  */
 export async function verifyPassword(
     plainPassword: string,
@@ -86,7 +86,7 @@ export function destroyUserSession(req: Request) {
 /**
  * Retrieve the user from the current session
  * @param req the standard Express session
- * @return a primise, with the user if logged, or undefined
+ * @return a promise, with the user if logged, or undefined
  */
 export async function retrieveUserFromSession(
     req: Request
