@@ -13,6 +13,7 @@ export default interface Config {
         synchronize: boolean;
         logging: boolean;
     };
+    disabledGraphQL: boolean;
     publicFolders: string[];
     viewFolders: string[];
     translationFolders: string[];
@@ -34,6 +35,7 @@ export class ConfigBuilder {
     public constructor(basePath: string) {
         this.config = {
             disabledDb: false,
+            disabledGraphQL: false,
             db: {
                 type: "mysql",
                 host: "localhost",
@@ -149,6 +151,11 @@ export class ConfigBuilder {
 
     public disableDB(): ConfigBuilder {
         this.config.disabledDb = true;
+        return this;
+    }
+
+    public disableGraphQL(): ConfigBuilder {
+        this.config.disabledGraphQL = true;
         return this;
     }
 

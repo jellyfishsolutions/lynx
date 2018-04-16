@@ -33,9 +33,14 @@ export function generateSchema(entitiesPaths: string[]): GraphQLSchema {
     var mutators = "";
     var schemas = "";
     let resolvers: any = { Query: {}, Mutation: {} };
+    let cNames: string[] = [];
     for (let d of data) {
         let inputType = "";
         let cName = d.meta.className.toLowerCase();
+        if (cNames.indexOf(cName) != -1) {
+            console.warn("The GraphQL class " + cName + " is already defined!");
+            continue;
+        }
         let queryName = pluralize(cName);
         queryName =
             "findAll" +
