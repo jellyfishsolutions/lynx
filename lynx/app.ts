@@ -345,7 +345,7 @@ export default class App {
             this.loadControllers(path);
         }
 
-        if (!config.disabledDb) {
+        if (!config.disabledDb && !config.disabledGraphQL) {
             const schema = graphqlGenerator.generateSchema(config.db.entities);
             // The GraphQL endpoint
             this.express.use(
