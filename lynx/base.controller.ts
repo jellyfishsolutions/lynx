@@ -145,9 +145,10 @@ export class BaseController {
     /**
      * Redirect the current route to another
      * @param routeName the new of the target route
+     * @param routeParams a plain object containing the paramters for the route.
      */
-    public redirect(routeName: string): RedirectResponse {
-        return new RedirectResponse(this.route(routeName));
+    public redirect(routeName: string, routeParams?: any): RedirectResponse {
+        return new RedirectResponse(this.route(routeName, routeParams));
     }
 
     /**
