@@ -303,13 +303,8 @@ export default class App {
         let app_session_options: any = {
             secret: config.sessionSecret,
             resave: false,
-            saveUninitialized: true,
-            cookie: {}
+            saveUninitialized: true
         };
-        if (isProduction()) {
-            this.express.set("trust proxy", 1);
-            app_session_options.cookie.secure = true;
-        }
         if (config.sessionStore) {
             app_session_options.store = config.sessionStore;
         }
