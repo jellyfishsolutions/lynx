@@ -297,7 +297,12 @@ export default class App {
         this.express.set("app", this);
 
         this.express.use("/api/*", cors());
-        this.express.use(bodyParser.json());
+        if (this.config.jsonLimit) {
+            this.express.use(bodyParser.json({ limit: this.config.jsonLimit }));
+        } else {
+            this.express.use(bodyParser.json());
+        }
+
         this.express.use(bodyParser.urlencoded({ extended: true }));
 
         let app_session_options: any = {

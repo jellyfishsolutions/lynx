@@ -27,6 +27,7 @@ export default interface Config {
     };
     defaultLanguage: string;
     uploadPath: string;
+    jsonLimit?: string;
 };
 
 export class ConfigBuilder {
@@ -166,6 +167,11 @@ export class ConfigBuilder {
 
     public setCustomUserEntity(hasCustom: boolean): ConfigBuilder {
         setSkipSync(!hasCustom);
+        return this;
+    }
+
+    public setJsonLimit(limit: string): ConfigBuilder {
+        this.config.jsonLimit = limit;
         return this;
     }
 
