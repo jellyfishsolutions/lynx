@@ -6,6 +6,8 @@ import User from "../entities/user.entity";
 import * as userLib from "../libs/users";
 import App from "../app";
 
+import { logger } from "../logger";
+
 /**
  * Default middleware to enable user authentication.
  * This middleware supports both session and token authorization.
@@ -44,7 +46,7 @@ export default class UserAuthMiddleware extends BaseMiddleware {
                 (<any>req).user = user;
             }
         } catch (err) {
-            console.error(err);
+            logger.error(err);
         }
     }
 }

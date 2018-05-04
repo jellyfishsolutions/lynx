@@ -7,6 +7,8 @@ import * as _generatePassword from "password-generator";
 import User from "../entities/user.entity";
 import { Request } from "express";
 
+import { logger } from "../logger";
+
 /**
  * Encrypt a plain password. This method support async/await.
  * @param plainPassword the original plain text password
@@ -92,7 +94,7 @@ export async function retrieveUserFromSession(
     req: Request
 ): Promise<User | undefined> {
     if (!req.session) {
-        console.error("No connection to REDIS!!!!");
+        logger.error("No connection to REDIS!!!!");
         process.exit(2);
     }
     return User.findOneById((<any>req.session).user_id);

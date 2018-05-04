@@ -3,6 +3,8 @@ import User from "./user.entity";
 import * as userLib from "../libs/users";
 import * as fs from "fs";
 
+import { logger } from "../logger";
+
 export async function setup(entitiesPaths: string[]) {
     let admin = await Role.getRepository().findOne({
         where: { name: Role.ADMIN }
@@ -44,7 +46,7 @@ export async function setup(entitiesPaths: string[]) {
             if (files[index].endsWith("ts")) continue;
             const entity = require(path + "/" + files[index]);
             if (entity.migrate) {
-                console.log("Running 'migrate' method for " + files[index]);
+                logger.info("Running 'migrate' method for " + files[index]);
                 entity.migrate();
             }
         }

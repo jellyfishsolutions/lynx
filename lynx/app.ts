@@ -24,6 +24,8 @@ import { sign } from "jsonwebtoken";
 const translations: any = {};
 const routes: any = {};
 
+import { logger } from "./logger";
+
 declare global {
     interface Array<T> {
         serialize(): Array<any>;
@@ -98,8 +100,8 @@ function translate(str: string): string {
         }
         return performTranslation(str, translations[lang]);
     } catch (e) {
-        console.log(e);
-        console.log(this);
+        logger.info(e);
+        logger.info(this);
     }
     return str;
 }
@@ -280,18 +282,18 @@ export default class App {
             createConnection(<any>config.db)
                 .then(_ => {
                     // here you can start to work with your entities
-                    console.log("Connection to the db established!");
+                    logger.info("Connection to the db established!");
                     setup(config.db.entities).catch(error => {
-                        console.log(error);
+                        logger.error(error);
                         process.exit(1);
                     });
                 })
                 .catch(error => {
-                    console.error(error);
+                    logger.error(error);
                     process.exit(1);
                 });
         } else {
-            console.log("The DB service is disabled");
+            logger.debug("The DB service is disabled");
         }
         this.express = express();
         this.express.set("app", this);
@@ -453,10 +455,11 @@ export default class App {
     public startServer(port: number) {
         this.express.listen(port, (err: Error) => {
             if (err) {
-                return console.log(err);
+                logger.error(err);
+                process.exit(1);
+                return;
             }
-
-            return console.log(`server is listening on ${port}`);
+            logger.info(`server is listening on ${port}`);
         });
     }
 
@@ -473,7 +476,7 @@ export default class App {
             }
             return performTranslation(str, translations[lang]);
         } catch (e) {
-            console.log(e);
+            logger.info(e);
         }
         return str;
     }
