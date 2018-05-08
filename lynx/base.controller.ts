@@ -3,6 +3,7 @@ import App from "./app";
 import { FileOptions } from "./file.response";
 import RenderResponse from "./render.response";
 import RedirectResponse from "./redirect.response";
+import SkipResponse from "./skip.response";
 import UnauthorizedResponse from "./unauthorized.response";
 import FileResponse from "./file.response";
 import Request from "./request";
@@ -211,6 +212,14 @@ export class BaseController {
      */
     public unauthorized(): UnauthorizedResponse {
         return new UnauthorizedResponse();
+    }
+
+    /**
+     * Generate a skip resopnse. In this particuar case, the original Express `next()`
+     * will be executed, causing the controller chain to continue its execution.
+     */
+    public next(): SkipResponse {
+        return new SkipResponse();
     }
 
     /**
