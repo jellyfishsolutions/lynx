@@ -7,6 +7,8 @@ import { HttpVerb } from "./http-verb";
 import { LynxControllerMetadata, LynxRouteMetadata } from "./decorators";
 import { BaseMiddleware, BLOCK_CHAIN } from "./base.middleware";
 
+import { logger } from "./logger";
+
 function retrieveArgumentsNamesFromRoute(path: string) {
     const args = [];
     const parts = path.split("/");
@@ -83,7 +85,7 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
                 }
             })
             .catch((error: Error) => {
-                console.log(error);
+                logger.info(error);
                 if (route.isAPI) {
                     res
                         .status(400)
@@ -183,7 +185,7 @@ function generateMiddlewareCallback(middleware: BaseMiddleware) {
                 next();
             })
             .catch((error: Error) => {
-                console.log(error);
+                logger.info(error);
                 res.status(400).send(error);
             });
     };

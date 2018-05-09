@@ -1,8 +1,7 @@
 {
     "name": "lynx-framework",
     "version": "0.1.30",
-    "description":
-        "lynx is a NodeJS framework for Web Development, based on decorators and the async/await support.",
+    "description": "lynx is a NodeJS framework for Web Development, based on decorators and the async/await support.",
     "repository": {
         "type": "git",
         "url": "https://github.com/jellyfishsolutions/lynx.git"
@@ -22,7 +21,7 @@
         "build": "gulp build",
         "test": "echo \"Error: no test specified\" && exit 1",
         "prepublishOnly": "npm run build",
-        "postinstall": "mv dist/* ."
+        "postinstall": "echo \"mv dist/* .\""
     },
     "author": "Luca Roverelli <luca.roverelli@gmail.com>",
     "license": "Apache-2.0",
@@ -50,6 +49,7 @@
         "axios": "^0.18.0",
         "bcrypt": "^2.0.1",
         "body-parser": "^1.18.2",
+        "colors": "^1.2.3",
         "connect-redis": "^3.3.2",
         "cors": "^2.8.4",
         "express": "^4.16.3",
@@ -71,7 +71,8 @@
         "reflect-metadata": "^0.1.12",
         "sharp": "^0.20.2",
         "typeorm": "^0.2.5",
-        "uuid": "^3.1.0"
+        "uuid": "^3.1.0",
+        "winston": "^3.0.0-rc5"
     },
     "devDependencies": {
         "gulp": "^3.9.1",

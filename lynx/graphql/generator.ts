@@ -6,6 +6,8 @@ import { getRepository } from "typeorm";
 import { makeExecutableSchema } from "graphql-tools";
 const graphqlFields = require("graphql-fields");
 
+import { logger } from "../logger";
+
 export function generateSchema(entitiesPaths: string[]): GraphQLSchema {
     let data: { entity: any; meta: EntityMetadata }[] = [];
 
@@ -38,7 +40,7 @@ export function generateSchema(entitiesPaths: string[]): GraphQLSchema {
         let inputType = "";
         let cName = d.meta.className.toLowerCase();
         if (dbNames.indexOf(d.meta.className) != -1) {
-            console.warn(
+            logger.warn(
                 "The entity " +
                     cName +
                     " reference to " +

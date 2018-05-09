@@ -17,6 +17,9 @@ import {
     Transporter
 } from "nodemailer";
 
+import { logger } from "./logger";
+import Logger from "./logger";
+
 let mailClient: Transporter;
 let guard = false;
 function syncronizedInit() {
@@ -26,7 +29,7 @@ function syncronizedInit() {
         try {
             createTestAccount((err, account) => {
                 if (err) {
-                    console.log(err);
+                    logger.error(err);
                     guard = false;
                     return;
                 }
@@ -43,7 +46,7 @@ function syncronizedInit() {
             });
         } catch (e) {
             guard = false;
-            console.log(e);
+            logger.error(e);
         }
     }
 }
@@ -92,6 +95,7 @@ export interface FlashMessage {
 export class BaseController {
     public app: App;
     private _metadata: LynxControllerMetadata;
+    public logger: Logger = logger;
 
     get metadata(): LynxControllerMetadata {
         return this._metadata;
@@ -271,12 +275,12 @@ export class BaseController {
         try {
             let result = await mailClient.sendMail(mailOptions);
             if (result) {
-                console.log("Preview URL: %s", getTestMessageUrl(result));
+                logger.debug("Preview URL: %s", getTestMessageUrl(result));
 
                 return true;
             }
         } catch (e) {
-            console.log(e);
+            logger.error(e);
         }
         return false;
     }
