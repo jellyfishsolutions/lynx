@@ -1,6 +1,6 @@
 {
     "name": "lynx-framework",
-    "version": "0.2.0",
+    "version": "0.2.2",
     "description":
         "lynx is a NodeJS framework for Web Development, based on decorators and the async/await support.",
     "repository": {
@@ -22,7 +22,7 @@
         "build": "gulp build",
         "test": "echo \"Error: no test specified\" && exit 1",
         "prepublishOnly": "npm run build",
-        "postinstall": "echo \"mv dist/* .\""
+        "postinstall": "mv dist/* ."
     },
     "author": "Luca Roverelli <luca.roverelli@gmail.com>",
     "license": "Apache-2.0",

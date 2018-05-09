@@ -17,7 +17,7 @@ export default class Media extends BaseEntity {
     @Column() originalName: string;
     @Column({ unique: true, default: null })
     slug: string;
-    @Column({ type: "int", length: 1, default: false })
+    @Column({ type: "tinyint", default: false })
     private is_directory: number;
 
     get isDirectory(): boolean {

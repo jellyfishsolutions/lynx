@@ -8,10 +8,10 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Luca Roverelli <luca.roverelli@gmail.com>",
-    "license": "Apache 2.0",
+    "license": "Apache-2.0",
     "dependencies": {
         "lynx-auth": "^0.1.0",
-        "lynx-framework": "^0.1.24"
+        "lynx-framework": "^0.2.2"
     },
     "devDependencies": {
         "gulp": "^3.9.1",
