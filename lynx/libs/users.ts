@@ -95,5 +95,5 @@ export async function retrieveUserFromSession(
         console.error("No connection to REDIS!!!!");
         process.exit(2);
     }
-    return User.findOneById((<any>req.session).user_id);
+    return User.findOne((<any>req.session).user_id);
 }

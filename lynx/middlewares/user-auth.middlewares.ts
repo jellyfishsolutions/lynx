@@ -39,7 +39,7 @@ export default class UserAuthMiddleware extends BaseMiddleware {
                 this.app.config.tokenSecret
             );
             let id = decoded.id;
-            let user = await User.findOneById(id);
+            let user = await User.findOne(id);
             if (user) {
                 (<any>req).user = user;
             }

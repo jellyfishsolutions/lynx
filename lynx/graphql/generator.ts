@@ -155,7 +155,7 @@ export function generateSchema(entitiesPaths: string[]): GraphQLSchema {
             ___: any
         ) => {
             let id = args.id;
-            let obj = (await getRepository(d.entity).findOneById(id)) as any;
+            let obj = (await getRepository(d.entity).findOne(id)) as any;
             for (let key in args.input) {
                 obj[key] = args.input[key];
             }
@@ -168,10 +168,8 @@ export function generateSchema(entitiesPaths: string[]): GraphQLSchema {
             __: any,
             ___: any
         ) => {
-            let obj = (await getRepository(d.entity).findOneById(
-                args.id
-            )) as any;
-            await getRepository(d.entity).deleteById(args.id);
+            let obj = (await getRepository(d.entity).findOne(args.id)) as any;
+            await getRepository(d.entity).delete(args.id);
             return obj;
         };
     }

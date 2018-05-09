@@ -11,13 +11,13 @@ import Role from "./role.entity";
 import Media from "./media.entity";
 import { GraphQL, GraphField } from "../graphql/decorators";
 
-let SKIP_SYNC = false;
+let SYNCHRONIZE = true;
 
 export function setSkipSync(skip: boolean) {
-    SKIP_SYNC = skip;
+    SYNCHRONIZE = !skip;
 }
 
-@Entity("users", { skipSync: SKIP_SYNC })
+@Entity("users", { synchronize: SYNCHRONIZE })
 @GraphQL()
 export default class User extends BaseEntity {
     @PrimaryGeneratedColumn()
