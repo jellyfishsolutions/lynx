@@ -86,13 +86,16 @@ export function isProduction(): boolean {
  */
 function translate(str: string): string {
     try {
-        let lang = this.getVariables()["lang"];
-        if (!lang) {
+        let lang = null;
+        try {
             const req: express.Request = this.ctx.req;
             lang = req.acceptsLanguages()[0];
             if (lang === "*") {
                 lang = null;
             }
+        } catch (e) {}
+        if (!lang) {
+            lang = this.getVariables()["lang"];
         }
         if (!lang) {
             let app: App = this.ctx.req.app.get("app");
