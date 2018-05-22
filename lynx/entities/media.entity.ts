@@ -93,13 +93,14 @@ export default class Media extends BaseEntity {
             if (!prev) {
                 prev = null;
             }
-            let m = await Media.findOne({
+            let where = {
                 where: {
                     originalName: n,
                     is_directory: 1,
-                    parentId: prev ? prev.id : null
+                    parent: prev
                 }
-            });
+            };
+            let m = await Media.findOne(where);
             if (!m) {
                 m = new Media();
                 m.originalName = n;
@@ -125,9 +126,12 @@ export default class Media extends BaseEntity {
                 where: {
                     originalName: n,
                     is_directory: 1,
-                    parentId: prev ? prev.id : null
+                    parent: prev
                 }
             });
+            if (!prev) {
+                return prev;
+            }
         }
         return <Media>prev;
     }
