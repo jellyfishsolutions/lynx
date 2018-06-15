@@ -252,6 +252,7 @@ export default class App {
     private _nunjucksEnvironment: nunjucks.Environment;
     private _upload: multer.Instance;
     private _templateMap: any;
+    private _modules: Set<BaseModule> = new Set();
 
     get config(): Config {
         return this._config;
@@ -273,8 +274,8 @@ export default class App {
         this._config = config;
 
         if (modules) {
-            let sanitizedModules = new Set(modules);
-            sanitizedModules.forEach(module => module.mount(this._config));
+            this._modules = new Set(modules);
+            this._modules.forEach(module => module.mount(this._config));
         }
 
         config.db.entities.unshift(__dirname + "/entities/*.entity.js");
@@ -286,10 +287,16 @@ export default class App {
                 .then(_ => {
                     // here you can start to work with your entities
                     logger.info("Connection to the db established!");
-                    setup(config.db.entities).catch(error => {
-                        logger.error(error);
-                        process.exit(1);
-                    });
+                    setup(config.db.entities)
+                        .then(_ => {
+                            this._modules.forEach(module =>
+                                module.onDatabaseConnected()
+                            );
+                        })
+                        .catch(error => {
+                            logger.error(error);
+                            process.exit(1);
+                        });
                 })
                 .catch(error => {
                     logger.error(error);

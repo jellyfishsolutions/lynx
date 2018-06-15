@@ -17,4 +17,8 @@ export default class SimpleModule extends BaseModule {
     get public(): string {
         return "";
     }
+
+    get entities(): string {
+        return "";
+    }
 }
