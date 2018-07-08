@@ -243,6 +243,8 @@ function resolvePath(path: string): string {
     return path;
 }
 
+export let app: App;
+
 /**
  * The App class contains the initialization code for a Lynx application.
  */
@@ -372,6 +374,8 @@ export default class App {
                 graphiqlExpress({ endpointURL: "/graphql" })
             );
         }
+
+        app = this;
     }
 
     private recursiveGenerateTemplateMap(path: string, currentPath: string) {

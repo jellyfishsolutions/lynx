@@ -8,6 +8,19 @@ import {
 import BaseEntity from "./base.entity";
 import User from "./user.entity";
 import * as fs from "fs";
+import * as sharp from "sharp";
+import * as uuid from "uuid/v4";
+import { app } from "../app";
+
+export interface ResizeConfig {
+    rotate: number;
+    scaleX: number;
+    scaleY: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
 
 @Entity("media")
 export default class Media extends BaseEntity {
@@ -59,6 +72,43 @@ export default class Media extends BaseEntity {
             fs.unlink(this.path, () => {});
         }
         return super.remove();
+    }
+
+    /**
+     * Create a cropped image starting of the current.
+     * The image will be placed in the same directory as the original.
+     * @param config: The configuration object containing the crop parameters
+     * @return a promise with the new @type Media
+     */
+    async resizeToNewEntity(config: ResizeConfig): Promise<Media> {
+        let img = sharp(this.path);
+        let data = await img.metadata();
+        img = img
+            .rotate(config.rotate)
+            .resize(
+                (data.width as number) * Math.round(config.scaleX),
+                (data.height as number) * Math.round(config.scaleY)
+            )
+            .extract({
+                left: Math.round(config.x),
+                top: Math.round(config.y),
+                width: Math.round(config.width),
+                height: Math.round(config.height)
+            });
+        let newFileName = uuid();
+        let path = app.config.uploadPath;
+        await img.toFile(path + "/" + newFileName);
+        let newMedia = new Media();
+        newMedia.isDirectory = false;
+        newMedia.originalName = copiedName(this.originalName);
+        newMedia.mimetype = this.mimetype;
+        let stat = fs.statSync(path + "/" + newFileName);
+        newMedia.size = stat.size;
+        newMedia.fileName = newFileName;
+        newMedia.path = path + "/" + newFileName;
+        newMedia.owner = this.owner;
+        newMedia.parent = this.parent;
+        return await newMedia.save();
     }
 
     static async persist(
@@ -147,6 +197,10 @@ export default class Media extends BaseEntity {
             .orWhere("m.id = :id AND is_directory = 0", { id: key })
             .getOne();
     }
+
+    static findOneWithParent(id: number): Promise<Media | undefined> {
+        return Media.findOne({ where: { id: id }, relations: ["parent"] });
+    }
 }
 
 function normalizePath(path: string): string {
@@ -157,4 +211,12 @@ function normalizePath(path: string): string {
         path = path.substring(0, path.length - 1);
     }
     return path;
+}
+
+function copiedName(name: string): string {
+    let index = name.lastIndexOf(".");
+    if (index == -1) {
+        return name + " 1";
+    }
+    return name.substring(0, index) + " 1" + name.substring(index);
 }
