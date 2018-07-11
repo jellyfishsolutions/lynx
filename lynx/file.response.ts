@@ -1,6 +1,7 @@
 import { Request as ERequest, Response as EResponse } from "express";
 import Response from "./response";
 import * as sharp from "sharp";
+import { app } from "./app";
 
 /**
  * This interface defines the currently available options for files.
@@ -46,33 +47,37 @@ export default class FileResponse extends Response {
         if (this._contentType) {
             res.contentType(this._contentType);
         }
-        if (this._options) {
-            if (!this._options.height) {
-                sharp(this.path)
-                    .resize(this._options.width)
-                    .toBuffer()
-                    .then(buff => {
-                        res.send(buff);
-                        res.end();
-                    })
-                    .catch(err => {
-                        throw err;
-                    });
-            } else if (this._options.width && this._options.height) {
-                sharp(this.path)
-                    .resize(this._options.width, this._options.height)
-                    .crop(sharp.gravity.centre)
-                    .toBuffer()
-                    .then(buff => {
-                        res.send(buff);
-                        res.end();
-                    })
-                    .catch(err => {
-                        throw err;
-                    });
-            }
-            return;
-        }
-        res.download(this.path);
+        app.config.ufs
+            .getToCache(this.path, app.config.cachePath)
+            .then(path => {
+                if (this._options) {
+                    if (!this._options.height) {
+                        sharp(path)
+                            .resize(this._options.width)
+                            .toBuffer()
+                            .then(buff => {
+                                res.send(buff);
+                                res.end();
+                            })
+                            .catch(err => {
+                                throw err;
+                            });
+                    } else if (this._options.width && this._options.height) {
+                        sharp(path)
+                            .resize(this._options.width, this._options.height)
+                            .crop(sharp.gravity.centre)
+                            .toBuffer()
+                            .then(buff => {
+                                res.send(buff);
+                                res.end();
+                            })
+                            .catch(err => {
+                                throw err;
+                            });
+                    }
+                    return;
+                }
+                res.download(path);
+            });
     }
 }

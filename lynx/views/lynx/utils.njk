@@ -1,25 +1,37 @@
 {% macro printError(errors, label) %}
-{% if errors[label] %}
-    <div class="invalid-feedback">
-        {{ errors[label] }}
-    </div>
-{% endif %}
+    {% if errors[label] %}
+        <div class="invalid-feedback">
+            {{ errors[label] }}
+        </div>
+    {% endif %}
 {% endmacro %}
 
 {% macro addInput(id, label, type, name, old, placeholder, errors, generics) %}
-<div class="form-group">
-    <label for="{{id}}">{{label}}</label>
-    <input type="{{type}}" class="form-control {{'is-invalid' if errors[name]}}" id="{{id}}" name="{{name}}" value="{{old}}" placeholder="{{placeholder}}" {{generics | safe}}>
-    {{ printError(errors, name) }}
-</div>
+    <div class="form-group">
+        <label for="{{id}}">{{label}}</label>
+        <input type="{{type}}" class="form-control {{'is-invalid' if errors[name]}}" id="{{id}}" name="{{name}}" value="{{old}}" placeholder="{{placeholder}}" {{generics | safe}}>
+        {{ printError(errors, name) }}
+    </div>
+{% endmacro %}
+
+{% macro addSelect(id, label, name, options, old, errors, generics) %}
+    <div class="form-group">
+        <label for="{{id}}">{{label}}</label>
+        <select class="form-control {{'is-invalid' if errors[name]}}" id="{{id}}" name="{{name}}" {{generics | safe}}>
+            {% for opt in options %}
+                <option value="{{opt.value}}" {{'selected' if old == opt.value}}>{{opt.label}}</option>
+            {% endfor %}
+        </select>
+        {# {{ printError(errors, name) }} #}
+    </div>
 {% endmacro %}
 
 {% macro alert(flash) %}
-{% if (flash) and (flash.length>0) %}
-    {% for msg in flash %}
-    <div class="alert alert-{{msg.type | safe}}" role="alert">
-        {{msg.message}}
-    </div>
-    {% endfor %}
-{% endif %}
+    {% if (flash) and (flash.length > 0) %}
+        {% for msg in flash %}
+            <div class="alert alert-{{msg.type | safe}}" role="alert">
+                {{msg.message}}
+            </div>
+        {% endfor %}
+    {% endif %}
 {% endmacro %}

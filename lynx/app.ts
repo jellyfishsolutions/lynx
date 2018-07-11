@@ -26,51 +26,6 @@ const routes: any = {};
 
 import { logger } from "./logger";
 
-declare global {
-    interface Array<T> {
-        serialize(): Array<any>;
-        removeHiddenField(field: string): void;
-        addHiddenField(field: string): void;
-    }
-}
-
-Object.defineProperty(Array.prototype, "serialize", {
-    enumerable: false,
-    value: function() {
-        let r = [];
-        for (let el of this) {
-            if (el.serialize) {
-                r.push(el.serialize());
-            } else {
-                r.push(el);
-            }
-        }
-        return r;
-    }
-});
-
-Object.defineProperty(Array.prototype, "addHiddenField", {
-    enumerable: false,
-    value: function(field: string) {
-        for (let el of this) {
-            if (el.addHiddenField) {
-                el.addHiddenField(field);
-            }
-        }
-    }
-});
-
-Object.defineProperty(Array.prototype, "removeHiddenField", {
-    enumerable: false,
-    value: function(field: string) {
-        for (let el of this) {
-            if (el.removeHiddenField) {
-                el.removeHiddenField(field);
-            }
-        }
-    }
-});
-
 /**
  * Utility function to check if we are in the production environment.
  * @return true if the NODE_ENV is set to "production", false otherwise
@@ -332,6 +287,18 @@ export default class App {
         this.express.use(flash());
 
         this._upload = multer({ dest: config.uploadPath });
+        fs.exists(config.cachePath, exists => {
+            if (!exists) {
+                fs.mkdir(config.cachePath, err => {
+                    if (err) {
+                        logger.error(
+                            "Error creating the local cache directory",
+                            err
+                        );
+                    }
+                });
+            }
+        });
 
         for (let folder of config.publicFolders) {
             this.express.use(express.static(folder));
@@ -501,3 +468,51 @@ export default class App {
         });
     }
 }
+
+declare global {
+    interface Array<T> {
+        serialize(): Array<any>;
+        removeHiddenField(field: string): void;
+        addHiddenField(field: string): void;
+    }
+}
+
+Object.defineProperty(Array.prototype, "serialize", {
+    enumerable: false,
+    configurable: true,
+    value: function() {
+        let r = [];
+        for (let el of this) {
+            if (el.serialize) {
+                r.push(el.serialize());
+            } else {
+                r.push(el);
+            }
+        }
+        return r;
+    }
+});
+
+Object.defineProperty(Array.prototype, "addHiddenField", {
+    enumerable: false,
+    configurable: true,
+    value: function(field: string) {
+        for (let el of this) {
+            if (el.addHiddenField) {
+                el.addHiddenField(field);
+            }
+        }
+    }
+});
+
+Object.defineProperty(Array.prototype, "removeHiddenField", {
+    enumerable: false,
+    configurable: true,
+    value: function(field: string) {
+        for (let el of this) {
+            if (el.removeHiddenField) {
+                el.removeHiddenField(field);
+            }
+        }
+    }
+});

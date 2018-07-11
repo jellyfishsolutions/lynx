@@ -9,6 +9,7 @@ import FileResponse from "./file.response";
 import Request from "./request";
 import { LynxControllerMetadata } from "./decorators";
 import Media from "./entities/media.entity";
+import StatusError from "./status-error";
 
 import {
     createTestAccount,
@@ -113,6 +114,36 @@ export class BaseController {
     async postConstructor() {}
 
     /**
+     * Add a value to the current request context.
+     * Any variable added with this method will available in the template context
+     * thought the @method render method.
+     * @param req the current Request
+     * @param key the key of the value to add
+     * @param value the value to add
+     */
+    public addToContext(req: Request, key: string, value: any) {
+        if (!req.lynxContext) {
+            req.lynxContext = {};
+        }
+        req.lynxContext[key] = value;
+    }
+
+    /**
+     * Utility method to generate an error with a status code.
+     * This method should be used instead of the usual throw new Error(msg).
+     * In this way, a proper HTTP status code can be used (for example, 404 or 500),
+     * instead of the default 400.
+     * @param status the http status code to return
+     * @param message the error message
+     * @return a new @type StatusError object
+     */
+    public error(status: number, message: string): StatusError {
+        let err = new StatusError(message);
+        err.statusCode = status;
+        return err;
+    }
+
+    /**
      * This method generate an url to a route starting from the route name and
      * optionally its parameters.
      * If a parameter not is used to generate the route url, it will be appended
@@ -130,11 +161,7 @@ export class BaseController {
      * @param req the request object
      * @param context a plain object containing any necessary data needed by the view
      */
-    public render(
-        view: string,
-        req: express.Request,
-        context?: any
-    ): RenderResponse {
+    public render(view: string, req: Request, context?: any): RenderResponse {
         if (!view.endsWith(".njk")) {
             view = view + ".njk";
         }
@@ -143,6 +170,9 @@ export class BaseController {
         }
         context.req = req;
         context.flash = (req.session as any).sessionFlash;
+        for (let key in req.lynxContext) {
+            context[key] = req.lynxContext[key];
+        }
         delete (req.session as any).sessionFlash;
         return new RenderResponse(view, context);
     }
@@ -201,7 +231,7 @@ export class BaseController {
             if (path.isDirectory) {
                 throw new Error("unable to downlaod a directory");
             }
-            let f = new FileResponse(path.path);
+            let f = new FileResponse(path.fileName);
             f.contentType = path.mimetype;
             if (options) {
                 f.options = options;

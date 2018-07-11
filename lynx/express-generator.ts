@@ -6,6 +6,7 @@ import { ValidateObject } from "./validate-object";
 import { HttpVerb } from "./http-verb";
 import { LynxControllerMetadata, LynxRouteMetadata } from "./decorators";
 import { BaseMiddleware, BLOCK_CHAIN } from "./base.middleware";
+import StatusError from "./status-error";
 
 import { logger } from "./logger";
 
@@ -62,8 +63,8 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
         }
         argsValues.push(req);
         argsValues.push(res);
-        f
-            .apply(controller, argsValues)
+        controller._ctxMap = {};
+        f.apply(controller, argsValues)
             .then((r: any) => {
                 if (route.isAPI) {
                     if (typeof r === "boolean") {
@@ -86,12 +87,18 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
             })
             .catch((error: Error) => {
                 logger.info(error);
+                let status = 400;
+                let e = error as any;
+                if (e.statusCode) {
+                    status = e.statusCode;
+                }
                 if (route.isAPI) {
-                    res
-                        .status(400)
-                        .send({ success: false, error: error.message });
+                    res.status(status).send({
+                        success: false,
+                        error: error.message
+                    });
                 } else {
-                    res.status(400).send(error);
+                    res.status(status).send(error);
                 }
             });
     };
@@ -176,8 +183,7 @@ function generateMiddlewareCallback(middleware: BaseMiddleware) {
         let argsValues = [];
         argsValues.push(req);
         argsValues.push(res);
-        f
-            .apply(middleware, argsValues)
+        f.apply(middleware, argsValues)
             .then((r: any) => {
                 if (r === BLOCK_CHAIN) {
                     return;
@@ -186,7 +192,12 @@ function generateMiddlewareCallback(middleware: BaseMiddleware) {
             })
             .catch((error: Error) => {
                 logger.info(error);
-                res.status(400).send(error);
+                let status = 400;
+                let e = error as any;
+                if (e.statusCode) {
+                    status = e.statusCode;
+                }
+                res.status(status).send(error);
             });
     };
 }

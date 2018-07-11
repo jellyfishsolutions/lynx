@@ -7,7 +7,6 @@ import {
 } from "typeorm";
 import BaseEntity from "./base.entity";
 import User from "./user.entity";
-import * as fs from "fs";
 import * as sharp from "sharp";
 import * as uuid from "uuid/v4";
 import { app } from "../app";
@@ -69,7 +68,7 @@ export default class Media extends BaseEntity {
                 await child.remove();
             }
         } else {
-            fs.unlink(this.path, () => {});
+            app.config.ufs.unlink(this.path, () => {});
         }
         return super.remove();
     }
@@ -102,7 +101,7 @@ export default class Media extends BaseEntity {
         newMedia.isDirectory = false;
         newMedia.originalName = copiedName(this.originalName);
         newMedia.mimetype = this.mimetype;
-        let stat = fs.statSync(path + "/" + newFileName);
+        let stat = await app.config.ufs.stat(path + "/" + newFileName);
         newMedia.size = stat.size;
         newMedia.fileName = newFileName;
         newMedia.path = path + "/" + newFileName;
@@ -117,6 +116,7 @@ export default class Media extends BaseEntity {
         directory?: Media
     ): Promise<Media> {
         let m = new Media();
+        uploadMedia = await app.config.ufs.uploadFile(uploadMedia);
         m.originalName = uploadMedia.originalname;
         m.isDirectory = false;
         m.mimetype = uploadMedia.mimetype;

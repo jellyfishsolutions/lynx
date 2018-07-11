@@ -1,5 +1,6 @@
 import * as express from "express";
 import App from "./app";
+import StatusError from "./status-error";
 
 export const BLOCK_CHAIN = "__block_chain";
 
@@ -12,6 +13,21 @@ export abstract class BaseMiddleware {
 
     constructor(app: App) {
         this.app = app;
+    }
+
+    /**
+     * Utility method to generate an error with a status code.
+     * This method should be used instead of the usual throw new Error(msg).
+     * In this way, a proper HTTP status code can be used (for example, 404 or 500),
+     * instead of the default 400.
+     * @param status the http status code to return
+     * @param message the error message
+     * @return a new @type StatusError object
+     */
+    public error(status: number, message: string): StatusError {
+        let err = new StatusError(message);
+        err.statusCode = status;
+        return err;
     }
 
     /**

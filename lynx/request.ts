@@ -6,8 +6,9 @@ import User from "./entities/user.entity";
  * the files arrays from the Multer library.
  */
 export default interface Request extends ERequest {
+    lynxContext: any;
     user: User;
     files: Express.Multer.File[];
-};
+}
 
 export { Request };

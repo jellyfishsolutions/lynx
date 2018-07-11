@@ -1,4 +1,6 @@
 import { setSkipSync } from "./entities/user.entity";
+import UFS from "./ufs";
+import { LocalUFS } from "./ufs";
 
 export default interface Config {
     disabledDb: boolean;
@@ -27,8 +29,10 @@ export default interface Config {
     };
     defaultLanguage: string;
     uploadPath: string;
+    cachePath: string;
     jsonLimit?: string;
-};
+    ufs: UFS;
+}
 
 export class ConfigBuilder {
     private config: Config;
@@ -60,7 +64,9 @@ export class ConfigBuilder {
                 sender: 'Lynx Framework" <lynx.framework@fakemail.com>'
             },
             defaultLanguage: "it",
-            uploadPath: basePath + "/../uploads"
+            uploadPath: basePath + "/../uploads",
+            cachePath: basePath + "/../cache",
+            ufs: new LocalUFS()
         };
     }
 
@@ -106,6 +112,11 @@ export class ConfigBuilder {
 
     public setUploadPath(path: string): ConfigBuilder {
         this.config.uploadPath = path;
+        return this;
+    }
+
+    public setCachePath(path: string): ConfigBuilder {
+        this.config.cachePath = path;
         return this;
     }
 
@@ -172,6 +183,11 @@ export class ConfigBuilder {
 
     public setJsonLimit(limit: string): ConfigBuilder {
         this.config.jsonLimit = limit;
+        return this;
+    }
+
+    public setUFS(ufs: UFS): ConfigBuilder {
+        this.config.ufs = ufs;
         return this;
     }
 
