@@ -93,12 +93,18 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
                     status = e.statusCode;
                 }
                 if (route.isAPI) {
-                    res.status(status).send({
+                    if (!res.headersSent) {
+                        res.status(status);
+                    }
+                    res.send({
                         success: false,
                         error: error.message
                     });
                 } else {
-                    res.status(status).send(error);
+                    if (!res.headersSent) {
+                        res.status(status);
+                    }
+                    res.send(error);
                 }
             });
     };

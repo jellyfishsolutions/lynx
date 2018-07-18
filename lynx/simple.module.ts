@@ -21,4 +21,8 @@ export default class SimpleModule extends BaseModule {
     get entities(): string {
         return "";
     }
+
+    get migrations(): string {
+        return "";
+    }
 }

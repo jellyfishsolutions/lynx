@@ -21,6 +21,8 @@ export default interface Config {
     translationFolders: string[];
     middlewaresFolders: string[];
     controllersFolders: string[];
+    migrationsFolders: string[];
+    disableMigrations: boolean;
     sessionSecret: string;
     sessionStore?: any;
     tokenSecret: string;
@@ -32,6 +34,7 @@ export default interface Config {
     cachePath: string;
     jsonLimit?: string;
     ufs: UFS;
+    onDatabaseInit: () => void;
 }
 
 export class ConfigBuilder {
@@ -57,6 +60,8 @@ export class ConfigBuilder {
             translationFolders: [basePath + "/locale"],
             middlewaresFolders: [basePath + "/middlewares"],
             controllersFolders: [basePath + "/controllers"],
+            migrationsFolders: [basePath + "/migrations"],
+            disableMigrations: false,
             sessionSecret: "session_secret",
             sessionStore: null,
             tokenSecret: "token_secret",
@@ -66,7 +71,8 @@ export class ConfigBuilder {
             defaultLanguage: "it",
             uploadPath: basePath + "/../uploads",
             cachePath: basePath + "/../cache",
-            ufs: new LocalUFS()
+            ufs: new LocalUFS(),
+            onDatabaseInit: null
         };
     }
 
@@ -92,6 +98,11 @@ export class ConfigBuilder {
 
     public setControllersFolders(folders: string[]): ConfigBuilder {
         this.config.controllersFolders = folders;
+        return this;
+    }
+
+    public setMigrationsFolders(folders: string[]): ConfigBuilder {
+        this.config.migrationsFolders = folders;
         return this;
     }
 
@@ -166,6 +177,16 @@ export class ConfigBuilder {
         return this;
     }
 
+    public disableMigration(): ConfigBuilder {
+        this.config.disableMigrations = true;
+        return this;
+    }
+
+    public enableMigration(): ConfigBuilder {
+        this.config.disableMigrations = false;
+        return this;
+    }
+
     public disableGraphQL(): ConfigBuilder {
         this.config.disabledGraphQL = true;
         return this;
@@ -188,6 +209,11 @@ export class ConfigBuilder {
 
     public setUFS(ufs: UFS): ConfigBuilder {
         this.config.ufs = ufs;
+        return this;
+    }
+
+    public setOnDatabaseInit(cb: () => void) {
+        this.config.onDatabaseInit = cb;
         return this;
     }
 

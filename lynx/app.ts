@@ -13,6 +13,8 @@ const flash = require("express-flash");
 import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
 import Config from "./config";
 import BaseModule from "./base.module";
+import Migration from "./migration";
+import MigrationEntity from "./entities/migration.entity";
 
 import * as expressGenerator from "./express-generator";
 import * as graphqlGenerator from "./graphql/generator";
@@ -249,6 +251,20 @@ export default class App {
                             this._modules.forEach(module =>
                                 module.onDatabaseConnected()
                             );
+                            if (!config.disableMigrations) {
+                                this.executeMigrations()
+                                    .catch(err => {
+                                        logger.error(err);
+                                        process.exit(1);
+                                    })
+                                    .then(() => {
+                                        if (this._config.onDatabaseInit) {
+                                            this._config.onDatabaseInit();
+                                        }
+                                    });
+                            } else if (this._config.onDatabaseInit) {
+                                this._config.onDatabaseInit();
+                            }
                         })
                         .catch(error => {
                             logger.error(error);
@@ -365,6 +381,66 @@ export default class App {
         this._templateMap = {};
         for (let path of paths) {
             this.recursiveGenerateTemplateMap(path, "/");
+        }
+    }
+
+    private async recursiveExecuteMigrations(path: string) {
+        if (!fs.existsSync(path)) {
+            logger.warn("The migration folder " + path + " doesn't exists!");
+            return;
+        }
+        const files = fs.readdirSync(path).sort((a, b) => a.localeCompare(b));
+        for (let index in files) {
+            let currentFilePath = path + "/" + files[index];
+            if (fs.lstatSync(currentFilePath).isDirectory()) {
+                this.recursiveExecuteMigrations(currentFilePath);
+                continue;
+            }
+            if (currentFilePath.endsWith("ts")) continue;
+            const m = require(currentFilePath);
+            if (!m.default) {
+                throw new Error(
+                    "Plese define the migration as the export default class in file " +
+                        currentFilePath +
+                        "."
+                );
+            }
+            let entity = await MigrationEntity.findOne();
+            if (entity && entity.wasExecuted()) {
+                continue;
+            }
+            if (!entity) {
+                entity = new MigrationEntity();
+                entity.id = currentFilePath;
+                await entity.save();
+            }
+            let migration = new m.default() as Migration;
+            try {
+                await migration.up();
+                entity.setExecuted();
+                await entity.save();
+                logger.info("Migration " + currentFilePath + " executed!");
+            } catch (e) {
+                entity.setFailed();
+                await entity.save();
+                logger.error(
+                    "Error executing the migration " + currentFilePath
+                );
+                throw e;
+            }
+        }
+    }
+
+    /**
+     *  This method will execute the migrations.
+     *  By default, this method will be executed automatically during the app
+     *  startup. In some scenario, like hight-scalability, this behaviour could
+     *  be unwanted. Thus, it is possibly otherwise to explicitly call this method
+     *  in some other way (for example, connecting it to a standard http route).
+     */
+    public async executeMigrations() {
+        for (let path of this._config.migrationsFolders) {
+            await this.recursiveExecuteMigrations(path);
         }
     }
 

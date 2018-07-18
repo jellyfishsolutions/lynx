@@ -7,6 +7,7 @@ export default abstract class BaseModule {
     abstract get views(): string;
     abstract get public(): string;
     abstract get entities(): string;
+    abstract get migrations(): string;
 
     public mount(config: Config) {
         if (this.controllers) {
@@ -26,6 +27,9 @@ export default abstract class BaseModule {
         }
         if (this.entities) {
             config.db.entities.unshift(this.entities + "/*.entity.js");
+        }
+        if (this.migrations) {
+            config.migrationsFolders.unshift(this.migrations);
         }
     }
 

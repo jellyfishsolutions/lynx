@@ -30,6 +30,7 @@ export async function setup(entitiesPaths: string[]) {
         administrator.password = await userLib.hashPassword("password");
         administrator.firstName = "Admin";
         administrator.lastName = "Admin";
+        administrator.nickName = "Admin";
         administrator.roles = [admin];
         await administrator.save();
     }
