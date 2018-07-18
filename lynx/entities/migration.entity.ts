@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 import BaseEntity from "./base.entity";
 
 export enum Status {
@@ -8,9 +8,10 @@ export enum Status {
 }
 
 @Entity("migrations")
-export default class User extends BaseEntity {
-    @PrimaryColumn({ length: 500 })
-    id: string;
+export default class MigrationEntity extends BaseEntity {
+    @PrimaryGeneratedColumn() id: number;
+    @Column({ type: "text" })
+    name: string;
     @Column() status: Status;
 
     constructor() {
@@ -27,5 +28,11 @@ export default class User extends BaseEntity {
 
     wasExecuted(): boolean {
         return this.status == Status.EXECUTED;
+    }
+
+    public static findByName(
+        name: string
+    ): Promise<MigrationEntity | undefined> {
+        return MigrationEntity.findOne({ where: { name: name } });
     }
 }

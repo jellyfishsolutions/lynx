@@ -405,13 +405,13 @@ export default class App {
                         "."
                 );
             }
-            let entity = await MigrationEntity.findOne();
+            let entity = await MigrationEntity.findByName(currentFilePath);
             if (entity && entity.wasExecuted()) {
                 continue;
             }
             if (!entity) {
                 entity = new MigrationEntity();
-                entity.id = currentFilePath;
+                entity.name = currentFilePath;
                 await entity.save();
             }
             let migration = new m.default() as Migration;
