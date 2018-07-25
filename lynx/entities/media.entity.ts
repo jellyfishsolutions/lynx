@@ -67,10 +67,11 @@ export default class Media extends BaseEntity {
             for (let child of await this.children) {
                 await child.remove();
             }
-        } else {
-            app.config.ufs.unlink(this.path, () => {});
+            return super.remove();
         }
-        return super.remove();
+        let k = await super.remove();
+        app.config.ufs.unlink(this.path, () => {});
+        return k;
     }
 
     /**
