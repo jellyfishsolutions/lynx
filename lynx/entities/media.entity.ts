@@ -81,7 +81,11 @@ export default class Media extends BaseEntity {
      * @return a promise with the new @type Media
      */
     async resizeToNewEntity(config: ResizeConfig): Promise<Media> {
-        let img = sharp(this.path);
+        let cachedPath = await app.config.ufs.getToCache(
+            this.fileName,
+            app.config.cachePath
+        );
+        let img = sharp(cachedPath);
         let data = await img.metadata();
         img = img
             .rotate(config.rotate)
@@ -96,16 +100,17 @@ export default class Media extends BaseEntity {
                 height: Math.round(config.height)
             });
         let newFileName = uuid();
-        let path = app.config.uploadPath;
+        let path = app.config.cachePath;
         await img.toFile(path + "/" + newFileName);
+        await app.config.ufs.uploadFileFromCache(newFileName, path);
         let newMedia = new Media();
         newMedia.isDirectory = false;
         newMedia.originalName = copiedName(this.originalName);
         newMedia.mimetype = this.mimetype;
-        let stat = await app.config.ufs.stat(path + "/" + newFileName);
+        let stat = await app.config.ufs.stat(newFileName);
         newMedia.size = stat.size;
         newMedia.fileName = newFileName;
-        newMedia.path = path + "/" + newFileName;
+        newMedia.path = newFileName;
         newMedia.owner = this.owner;
         newMedia.parent = this.parent;
         return await newMedia.save();

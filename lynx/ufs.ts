@@ -6,6 +6,7 @@ export default interface UFS {
     stat(path: string): Promise<Stat>;
     getToCache(path: string, cachePath: string): Promise<string>;
     uploadFile(uploadMedia: Express.Multer.File): Promise<Express.Multer.File>;
+    uploadFileFromCache(path: string, cachePath: string): Promise<void>;
 }
 
 export interface Stat {
@@ -19,7 +20,7 @@ export class LocalUFS implements UFS {
 
     stat(path: string): Promise<Stat> {
         return new Promise<Stat>((res, rej) => {
-            fs.stat(path, (err, r) => {
+            fs.stat(app.config.uploadPath + "/" + path, (err, r) => {
                 if (err) {
                     return rej(err);
                 }
@@ -37,6 +38,21 @@ export class LocalUFS implements UFS {
     uploadFile(uploadMedia: Express.Multer.File): Promise<Express.Multer.File> {
         return new Promise<Express.Multer.File>((res, _) => {
             return res(uploadMedia);
+        });
+    }
+
+    uploadFileFromCache(path: string, cachePath: string): Promise<void> {
+        return new Promise<void>((res, rej) => {
+            fs.copyFile(
+                cachePath + "/" + path,
+                app.config.uploadPath + "/" + path,
+                err => {
+                    if (err) {
+                        return rej(err);
+                    }
+                    return res();
+                }
+            );
         });
     }
 }
