@@ -1,6 +1,5 @@
 import * as express from "express";
 import App from "./app";
-import Response from "./response";
 import SkipResponse from "./skip.response";
 import { ValidateObject } from "./validate-object";
 import { HttpVerb } from "./http-verb";
@@ -79,7 +78,7 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
                         r.performResponse(req, res);
                         return next();
                     }
-                    if (r instanceof Response) {
+                    if (r.performResponse) {
                         return r.performResponse(req, res);
                     }
                     res.send(r);

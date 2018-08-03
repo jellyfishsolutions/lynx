@@ -35,6 +35,7 @@ export default interface Config {
     jsonLimit?: string;
     ufs: UFS;
     onDatabaseInit: () => void;
+    chachingImages: boolean;
 }
 
 export class ConfigBuilder {
@@ -72,7 +73,8 @@ export class ConfigBuilder {
             uploadPath: basePath + "/../uploads",
             cachePath: basePath + "/../cache",
             ufs: new LocalUFS(),
-            onDatabaseInit: null
+            onDatabaseInit: null,
+            chachingImages: false
         };
     }
 
@@ -212,8 +214,13 @@ export class ConfigBuilder {
         return this;
     }
 
-    public setOnDatabaseInit(cb: () => void) {
+    public setOnDatabaseInit(cb: () => void): ConfigBuilder {
         this.config.onDatabaseInit = cb;
+        return this;
+    }
+
+    public enableCachingImages(): ConfigBuilder {
+        this.config.chachingImages = true;
         return this;
     }
 

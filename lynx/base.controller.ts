@@ -227,18 +227,20 @@ export class BaseController {
      * @param options options to correctly generate the output file
      */
     public download(path: string | Media, options?: FileOptions): FileResponse {
+        let f: FileResponse;
         if (path instanceof Media) {
             if (path.isDirectory) {
-                throw new Error("unable to downlaod a directory");
+                throw new Error("unable to download a directory");
             }
-            let f = new FileResponse(path.fileName);
+            f = new FileResponse(path.fileName);
             f.contentType = path.mimetype;
-            if (options) {
-                f.options = options;
-            }
-            return f;
+        } else {
+            f = new FileResponse(path);
         }
-        return new FileResponse(path);
+        if (options) {
+            f.options = options;
+        }
+        return f;
     }
 
     /**
