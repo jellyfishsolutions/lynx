@@ -1,11 +1,10 @@
 var gulp = require("gulp");
-var clean = require("gulp-clean");
-var typescript = require("gulp-tsc");
-var watch = require("gulp-watch");
-var runSequence = require("run-sequence");
 var fs = require("fs");
+var del = require("del");
+var ts = require("gulp-typescript");
+var merge = require("merge2");
 
-let config = JSON.parse(fs.readFileSync(__dirname + "/tsconfig.json"));
+var config = JSON.parse(fs.readFileSync(__dirname + "/tsconfig.json"));
 
 gulp.task("default", function() {
     console.log("Main commands:");
@@ -28,20 +27,16 @@ gulp.task("copy", function() {
 });
 
 gulp.task("clean", function() {
-    return gulp
-        .src(config.compilerOptions.outDir, {
-            read: false
-        })
-        .pipe(clean());
+    return del(config.compilerOptions.outDir);
 });
 
 gulp.task("compile", function() {
-    return gulp
-        .src(["./lynx/**/*.ts", "!./lynx/**/node_modules/**"])
-        .pipe(typescript(config.compilerOptions))
-        .pipe(gulp.dest(config.compilerOptions.outDir));
+    var tsProject = ts.createProject(__dirname + "/tsconfig.json");
+    var tsResult = tsProject.src().pipe(tsProject());
+    return merge([
+        tsResult.js.pipe(gulp.dest(config.compilerOptions.outDir)),
+        tsResult.dts.pipe(gulp.dest(config.compilerOptions.outDir))
+    ]);
 });
 
-gulp.task("build", function(callback) {
-    runSequence("clean", "compile", "copy", callback);
-});
+gulp.task("build", gulp.series("clean", gulp.parallel("copy", "compile")));

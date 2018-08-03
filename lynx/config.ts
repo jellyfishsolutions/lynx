@@ -73,7 +73,7 @@ export class ConfigBuilder {
             uploadPath: basePath + "/../uploads",
             cachePath: basePath + "/../cache",
             ufs: new LocalUFS(),
-            onDatabaseInit: null,
+            onDatabaseInit: () => {},
             chachingImages: false
         };
     }

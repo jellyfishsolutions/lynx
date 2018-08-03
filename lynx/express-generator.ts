@@ -5,7 +5,6 @@ import { ValidateObject } from "./validate-object";
 import { HttpVerb } from "./http-verb";
 import { LynxControllerMetadata, LynxRouteMetadata } from "./decorators";
 import { BaseMiddleware, BLOCK_CHAIN } from "./base.middleware";
-import StatusError from "./status-error";
 
 import { logger } from "./logger";
 
