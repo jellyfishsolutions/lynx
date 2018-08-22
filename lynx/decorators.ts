@@ -12,7 +12,7 @@ export interface LynxRouteMetadata {
     body?: LynxRouteBody;
     isAPI: boolean;
     isMultipartForm: boolean;
-    verifiers: Function[];
+    verifiers: { fun: Function; isAsync: boolean }[];
     name?: string;
 }
 
@@ -72,7 +72,12 @@ function setName(name: string) {
 
 function setVerify(_: any, func: Function) {
     if (!routes) return;
-    routes[routes.length - 1].verifiers.push(func);
+    routes[routes.length - 1].verifiers.push({ fun: func, isAsync: false });
+}
+
+function setAsyncVerify(_: any, func: Function) {
+    if (!routes) return;
+    routes[routes.length - 1].verifiers.push({ fun: func, isAsync: true });
 }
 
 /**
@@ -173,11 +178,26 @@ export function Name(name: string) {
  * BEFORE the route. The function must NOT be an async function, and it shell
  * return a boolean value. If true is returned, the method is then executed.
  * This method is fundamental to implement authorization to a single endpoint.
+ * NOTE: this is the sync version of the AsyncVerify decorator.
  * @param func the verification function to be executed. It must NOT be an async function, and return a boolean value.
  */
 export function Verify(func: Function) {
     return (target: any, _: any, __: any) => {
         setVerify(target, func);
+    };
+}
+
+/**
+ * Add to the decorated method a verification function that will be executed
+ * BEFORE the route. The function must NOT be an async function, and it shell
+ * return a boolean value. If true is returned, the method is then executed.
+ * This method is fundamental to implement authorization to a single endpoint.
+ * NOTE: this is the async version of the Verify decorator.
+ * @param func the verification function to be executed. It MUST BE an async function, and return a boolean value.
+ */
+export function AsyncVerify(func: Function) {
+    return (target: any, _: any, __: any) => {
+        setAsyncVerify(target, func);
     };
 }
 

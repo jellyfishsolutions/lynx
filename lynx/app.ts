@@ -37,27 +37,37 @@ export function isProduction(): boolean {
 }
 
 /**
+ * This function shall be called with the nunjucks environment as self parameter!
+ * It retrieve the language of the current request, using the default
+ * language set in the app as fallback.
+ */
+function retrieveLanguage(self: any): string {
+    let lang = null;
+    try {
+        const req: express.Request = self.ctx.req;
+        lang = req.acceptsLanguages()[0];
+        if (lang === "*") {
+            lang = null;
+        }
+    } catch (e) {}
+    if (!lang) {
+        lang = self.getVariables()["lang"];
+    }
+    if (!lang) {
+        let app: App = self.ctx.req.app.get("app");
+        lang = app.config.defaultLanguage;
+    }
+    return lang;
+}
+
+/**
  * Implementation of the tr filer for the nunjucks engine.
  * It trying to understand the current language from the request. The fallback
  * uses the defaultLanguage set on the app.
  */
 function translate(str: string): string {
     try {
-        let lang = null;
-        try {
-            const req: express.Request = this.ctx.req;
-            lang = req.acceptsLanguages()[0];
-            if (lang === "*") {
-                lang = null;
-            }
-        } catch (e) {}
-        if (!lang) {
-            lang = this.getVariables()["lang"];
-        }
-        if (!lang) {
-            let app: App = this.ctx.req.app.get("app");
-            lang = app.config.defaultLanguage;
-        }
+        let lang = retrieveLanguage(this);
         return performTranslation(str, translations[lang]);
     } catch (e) {
         logger.info(e);
@@ -89,18 +99,7 @@ function performTranslation(str: string, translations: any): string {
  * @return the formatted date
  */
 function date(d: Date, format?: string): string {
-    let lang = this.getVariables()["lang"];
-    if (!lang) {
-        const req: express.Request = this.ctx.req;
-        lang = req.acceptsLanguages()[0];
-        if (lang === "*") {
-            lang = null;
-        }
-    }
-    if (!lang) {
-        let app: App = this.ctx.req.app.get("app");
-        lang = app.config.defaultLanguage;
-    }
+    let lang = retrieveLanguage(this);
     let m = moment(d).locale(lang);
     if (!format) {
         format = "lll";

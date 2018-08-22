@@ -10,25 +10,25 @@ Lynx is influenced by the Java Spring framework, trying to bring a more enterpri
 
 Lynx is founded by state-of-the-art libraries. It uses:
 
-* **[ExpressJS](http://expressjs.com/)** for the management of routes;
-* **[nunjucks](https://mozilla.github.io/nunjucks/)** as template engine;
-* **[TypeORM](http://typeorm.io/)** as ORM to the database;
-* **[GraphQL](http://graphql.org/)** to automatically exposes an API to the database entities;
-* **[JWT](https://jwt.io/)** to enable token authentication;
-* **[multer](https://github.com/expressjs/multer)** to manage file upload;
-* **[nodemailer](https://nodemailer.com)** to send emails;
-* **[joi](https://github.com/hapijs/joi)** to validate the requests;
-* **[sharp](http://sharp.dimens.io/)** to perform image resizing and other operations.
+-   **[ExpressJS](http://expressjs.com/)** for the management of routes;
+-   **[nunjucks](https://mozilla.github.io/nunjucks/)** as template engine;
+-   **[TypeORM](http://typeorm.io/)** as ORM to the database;
+-   **[GraphQL](http://graphql.org/)** to automatically exposes an API to the database entities;
+-   **[JWT](https://jwt.io/)** to enable token authentication;
+-   **[multer](https://github.com/expressjs/multer)** to manage file upload;
+-   **[nodemailer](https://nodemailer.com)** to send emails;
+-   **[joi](https://github.com/hapijs/joi)** to validate the requests;
+-   **[sharp](http://sharp.dimens.io/)** to perform image resizing and other operations.
 
 ## Out-Of-The-Box Features
 
 With Lynx, you will have the following functionality out of the box:
 
-* user management, and low level function for login, registration, authorization and authentication;
-* media upload management, file upload and retrieving, on a virtual-folder environment;
-* multi-language is a first class citizen! You can use new nunjucks filter to enable multi-language on the template engine, but also during fields validation!
-* GraphQL (queries and mutations!) automatically generated based on your Database entities and decoration.
-* datatables, directly integrated on the template engine, with pagination, filtering and ordering.
+-   user management, and low level function for login, registration, authorization and authentication;
+-   media upload management, file upload and retrieving, on a virtual-folder environment;
+-   multi-language is a first class citizen! You can use new nunjucks filter to enable multi-language on the template engine, but also during fields validation!
+-   GraphQL (queries and mutations!) automatically generated based on your Database entities and decoration.
+-   datatables, directly integrated on the template engine, with pagination, filtering and ordering.
 
 ## Installation
 
@@ -59,13 +59,13 @@ A Lynx application shall be formed by different folders:
     └── main.njk
 ```
 
-* The `controllers` folder shall contain (with subfolder support) any controllers.
-* The `entities` folder shall contain any entities, that will be automatically mapped with `TypeORM`.
-* The `libs` folder shall contain any additional libraries or utility functions, that can be used by controllers and middlewares.
-* The `local` folder shall contains localization file formatted as key-value JSON file.
-* The `middlewares` folder shall contain (with subfolder support) any middleware.
-* The `public` folder shall contain all the public resources, such as images, css and so on.
-* The `view` folder shall contain the nunjucks templates. An `emails` subfolder, containing the email templates, is recommended.
+-   The `controllers` folder shall contain (with subfolder support) any controllers.
+-   The `entities` folder shall contain any entities, that will be automatically mapped with `TypeORM`.
+-   The `libs` folder shall contain any additional libraries or utility functions, that can be used by controllers and middlewares.
+-   The `local` folder shall contains localization file formatted as key-value JSON file.
+-   The `middlewares` folder shall contain (with subfolder support) any middleware.
+-   The `public` folder shall contain all the public resources, such as images, css and so on.
+-   The `view` folder shall contain the nunjucks templates. An `emails` subfolder, containing the email templates, is recommended.
 
 The project structure can be customized.
 
@@ -180,6 +180,28 @@ function alwaysDeny(req, res) {
 }
 ...
 @Verify(alwaysDeny)
+@GET("/unreachable")
+async someMethod() {
+    ...
+}
+```
+
+### `AsyncVerify(function)`
+
+Add to the decorated method a verification function that will be executed BEFORE the route.
+The function MUST BE an async function, and it shell return a boolean value. If true is returned, the method is then executed. This method is fundamental to implement authorization to a single endpoint.
+NOTE: the function shall NOT be a class method, but a proper Typescript function.
+
+> This method is available from version 0.5.5
+
+Example:
+
+```
+async function alwaysDeny(req, res) {
+    return false;
+}
+...
+@AsyncVerify(alwaysDeny)
 @GET("/unreachable")
 async someMethod() {
     ...
