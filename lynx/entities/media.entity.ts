@@ -58,6 +58,11 @@ export default class Media extends BaseEntity {
     @ManyToOne(_ => User, user => user.media, { eager: true })
     owner: User;
 
+    @Column({ nullable: true })
+    width: number;
+    @Column({ nullable: true })
+    height: number;
+
     get children(): Promise<Media[]> {
         return Media.find({ where: { parent: this } });
     }
@@ -113,6 +118,8 @@ export default class Media extends BaseEntity {
         newMedia.path = newFileName;
         newMedia.owner = this.owner;
         newMedia.parent = this.parent;
+        newMedia.width = config.width;
+        newMedia.height = config.height;
         return await newMedia.save();
     }
 
@@ -132,6 +139,14 @@ export default class Media extends BaseEntity {
         m.owner = user;
         if (directory) {
             m.parent = directory;
+        }
+        let img = sharp(uploadMedia.path);
+        let data = await img.metadata();
+        if (data.width) {
+            m.width = data.width;
+        }
+        if (data.height) {
+            m.height = data.height;
         }
         await m.save();
         return m;
