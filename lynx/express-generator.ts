@@ -108,7 +108,7 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
                     if (!res.headersSent) {
                         res.status(status);
                     }
-                    res.send(error);
+                    next(error);
                 }
             });
     };

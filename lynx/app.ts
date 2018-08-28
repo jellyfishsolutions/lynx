@@ -15,6 +15,7 @@ import Config from "./config";
 import BaseModule from "./base.module";
 import Migration from "./migration";
 import MigrationEntity from "./entities/migration.entity";
+import ErrorController from "./error.controller";
 
 import * as expressGenerator from "./express-generator";
 import * as graphqlGenerator from "./graphql/generator";
@@ -211,6 +212,7 @@ export default class App {
     private _upload: multer.Instance;
     private _templateMap: any;
     private _modules: Set<BaseModule> = new Set();
+    private _errorController: ErrorController;
 
     get config(): Config {
         return this._config;
@@ -226,6 +228,15 @@ export default class App {
 
     get upload(): multer.Instance {
         return this._upload;
+    }
+
+    /**
+     * This property allow the customization of the standard error controller.
+     * You need to create the controller using its standard constructor:
+     * new MyCustomErrorController(app)
+     */
+    set customErrorController(ctrl: ErrorController) {
+        this._errorController = ctrl;
     }
 
     constructor(config: Config, modules?: BaseModule[]) {
@@ -358,6 +369,7 @@ export default class App {
         }
 
         app = this;
+        this._errorController = new ErrorController(this);
     }
 
     private recursiveGenerateTemplateMap(path: string, currentPath: string) {
@@ -509,6 +521,27 @@ export default class App {
     }
 
     public startServer(port: number) {
+        this.express.use((req, res) => {
+            this._errorController
+                .onNotFound(req as any)
+                .then((r: any) => {
+                    r.performResponse(req, res);
+                })
+                .catch(err => {
+                    res.send(err);
+                });
+        });
+        this.express.use((error: Error, req: any, res: any, _: any) => {
+            this._errorController
+                .onError(error, req as any)
+                .then((r: any) => {
+                    r.performResponse(req, res);
+                })
+                .catch(err => {
+                    res.send(err);
+                });
+        });
+
         this.express.listen(port, (err: Error) => {
             if (err) {
                 logger.error(err);
