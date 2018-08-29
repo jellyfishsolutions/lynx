@@ -246,6 +246,37 @@ async performLogin(
 }
 ```
 
+Starting from version `0.5.8`, a new builder class can be used to create Joi schemas.
+The previous example can be simplified as follows:
+
+```
+import { ValidateObject, SchemaBuilder } from "lynx-framework/validate-object";
+
+...
+
+const loginSchema = new SchemaBuilder()
+    .email("email")
+    .withLabel("{{input_email}}")
+    .password("password")
+    .withLabel("{{input_password}}")
+    .build();
+
+...
+
+@Body("d", loginSchema)
+@POST("/login")
+async performLogin(
+    d: ValidateObject<{ email: string; password: string }>
+) {
+    if (!d.isValid) {
+        //d.errors contains localized errors!
+        return false;
+    }
+    let unwrapped = d.obj; //I can use unwrapped.email and unwrapped.password!
+    ...
+}
+```
+
 ### Advanced
 
 #### Accessing the original `req` and `res`
