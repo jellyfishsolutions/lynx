@@ -1,6 +1,6 @@
 {
     "name": "lynx-framework",
-    "version": "0.5.7",
+    "version": "0.5.8",
     "description":
         "lynx is a NodeJS framework for Web Development, based on decorators and the async/await support.",
     "repository": {
@@ -28,6 +28,9 @@
     "license": "Apache-2.0",
     "bugs": {
         "url": "https://github.com/jellyfishsolutions/lynx/issues"
+    },
+    "prettier": {
+        "tabWidth": 4
     },
     "homepage": "https://github.com/jellyfishsolutions/lynx#readme",
     "dependencies": {
