@@ -5,7 +5,7 @@ export default interface UFS {
     unlink(path: string, cb: (err: Error) => void): void;
     stat(path: string): Promise<Stat>;
     getToCache(path: string, cachePath: string): Promise<string>;
-    uploadFile(uploadMedia: Express.Multer.File): Promise<Express.Multer.File>;
+    uploadFile(uploadMedia: any): Promise<any>;
     uploadFileFromCache(path: string, cachePath: string): Promise<void>;
 }
 
@@ -35,8 +35,8 @@ export class LocalUFS implements UFS {
         });
     }
 
-    uploadFile(uploadMedia: Express.Multer.File): Promise<Express.Multer.File> {
-        return new Promise<Express.Multer.File>((res, _) => {
+    uploadFile(uploadMedia: any): Promise<any> {
+        return new Promise<any>((res, _) => {
             return res(uploadMedia);
         });
     }
