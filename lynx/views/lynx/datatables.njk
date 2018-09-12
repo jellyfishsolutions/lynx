@@ -1,54 +1,64 @@
 {% macro pagination(config, url) %}
-{% if (config.pageCount > 1) %}
-    <ul class="pagination {{config._class}} justify-content-end mr-4">
-        <li class="page-item"><a class="page-link" href="{{url}}page=1">&laquo;</a></li>
-        {% for i in range(config.left, config.right) %}
-            {% if i == config.currentPage %}
-                <li class="page-item active"><a class="page-link" href="{{url}}page={{i+1}}"><span>{{i+1}}<span class="sr-only">(current)</span></span></a></li>
-            {% else %}
-                <li class="page-item"><a class="page-link" href="{{url}}page={{i+1}} ">{{i+1}}</a></li>
-            {% endif %}
-        {% endfor %}
-        <li class="page-item"><a class="page-link" href="{{url}}page={{config.pageCount}}">&raquo;</a></li>
-    </ul>
-{% endif %}
+    {% if (config.pageCount > 1) %}
+        <ul class="pagination justify-content-end {{config._class}}">
+            <li class="page-item">
+                <a class="page-link" href="{{url}}page=1">&laquo;</a>
+            </li>
+            {% for i in range(config.left, config.right) %}
+                {% if i == config.currentPage %}
+                    <li class="page-item active">
+                        <a class="page-link" href="{{url}}page={{i+1}}">
+                            <span>{{i+1}}
+                                <span class="sr-only">(current)</span></span></a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{url}}page={{i+1}} ">{{i+1}}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item">
+                <a class="page-link" href="{{url}}page={{config.pageCount}}">&raquo;</a>
+            </li>
+        </ul>
+    {% endif %}
 {% endmacro %}
 
 {% macro ordrByIcon(index, config) %}
-{% if (config.table.ordersBy[index]) != 0 %}
-    {% if (config.table.ordersBy[index] == -1) %}
-        <i class="fas fa-sort-amount-up"></i>
-    {% else %}
-        <i class="fas fa-sort-amount-down"></i>
+    {% if (config.table.ordersBy[index]) != 0 %}
+        {% if (config.table.ordersBy[index] == -1) %}
+            <i class="fas fa-sort-amount-up"></i>
+        {% else %}
+            <i class="fas fa-sort-amount-down"></i>
+        {% endif %}
     {% endif %}
-{% endif %}
 {% endmacro %}
 
 {% macro generateHeader(str, index, config) %}
-    <a href="{{config.urlNoPageNoOrder}}orderby={{config.map[index]}}{{':desc' if config.table.ordersBy[index] == 1}}">{{ str }} {{ ordrByIcon(index, config) }}</a>
+    <a href="{{config.urlNoPageNoOrder}}orderby={{config.map[index]}}{{':desc' if config.table.ordersBy[index] == 1}}">{{ str }}
+        {{ ordrByIcon(index, config) }}</a>
 {% endmacro %}
 
 {% macro table(config) %}
-<table class="table {{config._class}}">
-    <thead>
-        <tr>
-            {% for head in config.header %}
-                <th {% if head._class %} class="{{head._class}}" {% endif %}>{{head.text | safe}}</th>
-            {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for line in config.data %}
+    <table class="table {{config._class}}">
+        <thead>
             <tr>
-                {% for column in line %}
-                    <td {% if column._class %} class="{{column._class}}" {% endif %}>{{column.text | safe}}</td>
+                {% for head in config.header %}
+                    <th {% if head._class %} class="{{head._class}}" {% endif %}>{{head.text | safe}}</th>
                 {% endfor %}
             </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            {% for line in config.data %}
+                <tr>
+                    {% for column in line %}
+                        <td {% if column._class %} class="{{column._class}}" {% endif %}>{{column.text | safe}}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endmacro %}
-
 
 {% macro datatable(config) %}
     {{ table(config.table, config.urlNoOrder)}}
