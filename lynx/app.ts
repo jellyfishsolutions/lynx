@@ -38,6 +38,23 @@ export function isProduction(): boolean {
 }
 
 /**
+ * Retrieve the prefereed language from an express request, using the accepts-languages
+ * header value.
+ * @param req the express request
+ * @return the two letter lowecased language, or "*" (wildcard), or null
+ */
+export function getLangaugeFromRequest(req: express.Request): string {
+    let lang = req.acceptsLanguages()[0];
+    if (lang.indexOf("-") !== -1) {
+        lang = lang.split("-")[0];
+    }
+    if (lang) {
+        lang = lang.trim().toLowerCase();
+    }
+    return lang;
+}
+
+/**
  * This function shall be called with the nunjucks environment as self parameter!
  * It retrieve the language of the current request, using the default
  * language set in the app as fallback.
@@ -46,7 +63,7 @@ function retrieveLanguage(self: any): string {
     let lang = null;
     try {
         const req: express.Request = self.ctx.req;
-        lang = req.acceptsLanguages()[0];
+        lang = getLangaugeFromRequest(req);
         if (lang === "*") {
             lang = null;
         }
@@ -558,10 +575,9 @@ export default class App {
 
     public translate(str: string, req: express.Request): string {
         try {
-            let lang = this._config.defaultLanguage;
-            let langs = req.acceptsLanguages();
-            if (langs && langs.length > 0) {
-                lang = langs[0];
+            let lang = getLangaugeFromRequest(req);
+            if (!lang) {
+                lang = this._config.defaultLanguage;
             }
             return performTranslation(str, translations[lang]);
         } catch (e) {
