@@ -140,13 +140,23 @@ export default class Media extends BaseEntity {
         if (directory) {
             m.parent = directory;
         }
-        let img = sharp(uploadMedia.path);
-        let data = await img.metadata();
-        if (data.width) {
-            m.width = data.width;
-        }
-        if (data.height) {
-            m.height = data.height;
+        let cachedPath = await app.config.ufs.getToCache(
+            m.fileName,
+            app.config.cachePath
+        );
+        let img = sharp(cachedPath);
+        try {
+            let data = await img.metadata();
+            if (data.width) {
+                m.width = data.width;
+            }
+            if (data.height) {
+                m.height = data.height;
+            }
+        } catch (e) {
+            console.log("Error obtaining the metadata of the image.");
+            console.log("Image path: "+uploadMedia.path);
+            console.error(e);
         }
         await m.save();
         return m;
