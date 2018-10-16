@@ -1,5 +1,6 @@
 import * as express from "express";
 import App from "./app";
+import { app } from "./app";
 import { FileOptions } from "./file.response";
 import RenderResponse from "./render.response";
 import RedirectResponse from "./redirect.response";
@@ -27,27 +28,37 @@ function syncronizedInit() {
     if (guard) return;
     guard = true;
     if (!mailClient) {
-        try {
-            createTestAccount((err, account) => {
-                if (err) {
-                    logger.error(err);
-                    guard = false;
-                    return;
-                }
-                mailClient = createTransport({
-                    host: "smtp.ethereal.email",
-                    port: 587,
-                    secure: false, // true for 465, false for other ports
-                    auth: {
-                        user: account.user, // generated ethereal user
-                        pass: account.pass // generated ethereal password
+        if (!app.config.mailer.host) {
+            try {
+                createTestAccount((err, account) => {
+                    if (err) {
+                        logger.error(err);
+                        guard = false;
+                        return;
                     }
+                    mailClient = createTransport({
+                        host: "smtp.ethereal.email",
+                        port: 587,
+                        secure: false, // true for 465, false for other ports
+                        auth: {
+                            user: account.user, // generated ethereal user
+                            pass: account.pass // generated ethereal password
+                        }
+                    });
+                    guard = false;
                 });
+            } catch (e) {
                 guard = false;
-            });
-        } catch (e) {
-            guard = false;
-            logger.error(e);
+                logger.error(e);
+            }
+        } else {
+            try {
+                mailClient = createTransport(app.config.mailer);
+                guard = false;
+            } catch (e) {
+                guard = false;
+                logger.error(e);
+            }
         }
     }
 }

@@ -28,6 +28,13 @@ export default interface Config {
     tokenSecret: string;
     mailer: {
         sender: string;
+        host: string;
+        port: number;
+        secure: boolean;
+        auth: {
+            user: string;
+            pass: string;
+        }
     };
     defaultLanguage: string;
     uploadPath: string;
@@ -67,7 +74,14 @@ export class ConfigBuilder {
             sessionStore: null,
             tokenSecret: "token_secret",
             mailer: {
-                sender: 'Lynx Framework" <lynx.framework@fakemail.com>'
+                sender: 'Lynx Framework <lynx.framework@fakemail.com>',
+                host: '',
+                port: 587,
+                secure: false,
+                auth: {
+                    user: '',
+                    pass: ''
+                }
             },
             defaultLanguage: "it",
             uploadPath: basePath + "/../uploads",
@@ -196,6 +210,19 @@ export class ConfigBuilder {
 
     public setMailerSender(address: string): ConfigBuilder {
         this.config.mailer.sender = address;
+        return this;
+    }
+
+    public setMailerAuth(user: string, password: string): ConfigBuilder {
+        this.config.mailer.auth.user = user;
+        this.config.mailer.auth.pass = password;
+        return this;
+    }
+
+    public setMailerServer(host: string, port: number, secure: boolean): ConfigBuilder {
+        this.config.mailer.host = host;
+        this.config.mailer.port = port;
+        this.config.mailer.secure = secure;
         return this;
     }
 

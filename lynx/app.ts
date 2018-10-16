@@ -258,6 +258,7 @@ export default class App {
 
     constructor(config: Config, modules?: BaseModule[]) {
         this._config = config;
+        app = this;
 
         if (modules) {
             this._modules = new Set(modules);
@@ -385,7 +386,6 @@ export default class App {
             );
         }
 
-        app = this;
         this._errorController = new ErrorController(this);
     }
 
