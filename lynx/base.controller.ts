@@ -319,9 +319,8 @@ export class BaseController {
             let result = await mailClient.sendMail(mailOptions);
             if (result) {
                 logger.debug("Preview URL: %s", getTestMessageUrl(result));
-
-                return true;
             }
+            return true;
         } catch (e) {
             logger.error(e);
         }
