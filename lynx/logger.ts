@@ -83,9 +83,9 @@ export default class Logger {
             return;
         }
         if (optionalParameters.length > 0) {
-            console.debug(this.head + msg, optionalParameters);
+            console.log(this.head + msg, optionalParameters);
         } else {
-            console.debug(this.head + msg);
+            console.log(this.head + msg);
         }
     }
 
