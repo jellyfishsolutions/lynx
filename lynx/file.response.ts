@@ -34,6 +34,7 @@ export interface FileOptions {
 export default class FileResponse extends AsyncResponse {
     private path: string;
     private _contentType?: string;
+    private _fileName: string;
     private _options?: FileOptions;
     constructor(path: string) {
         super();
@@ -49,6 +50,14 @@ export default class FileResponse extends AsyncResponse {
     }
 
     /**
+     * Set the name of the file to download
+     * @param value the name of the file
+     */
+    set fileName(value: string) {
+        this._fileName = value;
+    }
+
+    /**
      * Set the file options, to correctly generate the response.
      * @param value the FileOptions
      */
@@ -56,6 +65,12 @@ export default class FileResponse extends AsyncResponse {
         this._options = value;
     }
 
+    private download(res: EResponse, path: string) {
+        if (this._fileName) {
+            return res.download(path, this._fileName);
+        }
+        res.download(path);
+    }
     /**
      * Generation of the response.
      * This method can eventually perform some transformation on output if a
@@ -71,12 +86,12 @@ export default class FileResponse extends AsyncResponse {
         );
 
         if (!this._options) {
-            return res.download(path);
+            return this.download(res, path);
         }
 
         let cachePath = path + "_" + JSON.stringify(this._options);
         if (await fileExsists(cachePath)) {
-            return res.download(cachePath);
+            return this.download(res, cachePath);
         }
 
         let s: sharp.SharpInstance = {} as sharp.SharpInstance;
@@ -98,7 +113,6 @@ export default class FileResponse extends AsyncResponse {
             saveToCache(cachePath, s);
             return;
         }
-
-        res.download(path);
+        this.download(res, path);
     }
 }

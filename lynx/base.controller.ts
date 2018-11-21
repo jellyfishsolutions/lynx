@@ -245,6 +245,9 @@ export class BaseController {
             }
             f = new FileResponse(path.fileName);
             f.contentType = path.mimetype;
+            if (path.originalName) {
+                f.fileName = path.originalName;
+            }
         } else {
             f = new FileResponse(path);
         }
