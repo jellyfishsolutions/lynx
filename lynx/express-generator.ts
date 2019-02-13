@@ -36,7 +36,15 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
                 if (verify.isAsync) {
                     passed = await verify.fun(req, res);
                 } else {
-                    passed = verify.fun(req, res);
+                    if (verify.fun) {
+                        passed = verify.fun(req, res);
+                    } else {
+                        try {
+                            passed = (verify as any)(req, res);
+                        } catch(e) {
+                            logger.error(e);
+                        }
+                    }
                 }
                 if (!passed) {
                     return next();
