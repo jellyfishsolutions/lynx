@@ -30,6 +30,9 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
         res: express.Response,
         next: express.NextFunction
     ) => {
+        (req as any).lynx = {
+            route: route
+        };
         if (route.verifiers) {
             for (let verify of route.verifiers) {
                 let passed = true;
@@ -104,18 +107,15 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
                 if (e.statusCode) {
                     status = e.statusCode;
                 }
+                if (!res.headersSent) {
+                    res.status(status);
+                }
                 if (route.isAPI) {
-                    if (!res.headersSent) {
-                        res.status(status);
-                    }
                     res.send({
                         success: false,
                         error: error.message
                     });
                 } else {
-                    if (!res.headersSent) {
-                        res.status(status);
-                    }
                     next(error);
                 }
             });

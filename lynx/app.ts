@@ -542,9 +542,15 @@ export default class App {
             this._errorController
                 .onNotFound(req as any)
                 .then((r: any) => {
+                    if (!res.headersSent) {
+                        res.status(404);
+                    }
                     r.performResponse(req, res);
                 })
                 .catch(err => {
+                    if (!res.headersSent) {
+                        res.status(404);
+                    }
                     res.send(err);
                 });
         });
@@ -552,9 +558,15 @@ export default class App {
             this._errorController
                 .onError(error, req as any)
                 .then((r: any) => {
+                    if (!res.headersSent) {
+                        res.status(500);
+                    }
                     r.performResponse(req, res);
                 })
                 .catch(err => {
+                    if (!res.headersSent) {
+                        res.status(500);
+                    }
                     res.send(err);
                 });
         });
