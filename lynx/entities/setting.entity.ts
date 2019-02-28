@@ -7,14 +7,14 @@ import { GraphQL, GraphField } from "../graphql/decorators";
 export default class Setting extends BaseEntity {
     @PrimaryGeneratedColumn()
     @GraphField({ type: "ID" })
-    id: Number;
+    id: number;
 
     @Column()
     @GraphField()
-    name: String;
+    name: string;
 
     @Column()
     @GraphField()
-    value: String;
+    value: string;
 }
 
