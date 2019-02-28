@@ -156,10 +156,14 @@ export function generateRouter(
             ).replace(/\/\/+/g, "/");
         }
         const callback = generateStandardCallback(controller, route, app);
+        let p = route.path;
+        if (!p.startsWith("/")) {
+            p = "/" + p;
+        }
         if (route.isMultipartForm) {
-            func.call(router, route.path, app.upload.any(), callback);
+            func.call(router, p, app.upload.any(), callback);
         } else {
-            func.call(router, route.path, callback);
+            func.call(router, p, callback);
         }
     }
 
