@@ -218,6 +218,15 @@ function resolvePath(path: string): string {
     return path;
 }
 
+/**
+ * This function returns the current server url, with the used protocol and port.
+ * This function is available as global function on nunjucks.
+ */
+function currentHost(): string {
+    let req = this.ctx.req;
+    return req.protocol + '://' + req.get('host');
+}
+
 export let app: App;
 
 /**
@@ -364,6 +373,7 @@ export default class App {
         this._nunjucksEnvironment.addGlobal("route", route);
         this._nunjucksEnvironment.addGlobal("old", old);
         this._nunjucksEnvironment.addGlobal("resolvePath", resolvePath);
+        this._nunjucksEnvironment.addGlobal("currentHost", currentHost);
 
         for (let path of config.middlewaresFolders) {
             this.loadMiddlewares(path);
