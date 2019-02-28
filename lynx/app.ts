@@ -28,6 +28,7 @@ const translations: any = {};
 const routes: any = {};
 
 import { logger } from "./logger";
+import {APIResponseWrapper, DefaultAPIResponseWrapper} from "./api-response-wrapper";
 
 /**
  * Utility function to check if we are in the production environment.
@@ -132,7 +133,7 @@ function date(d: Date, format?: string): string {
  * @param parameters a plain object containing the parameters
  * @return the compiled url
  */
-function applyParameterstoUrl(url: string, parameters: any): string {
+function applyParametersToUrl(url: string, parameters: any): string {
     if (!parameters) {
         return url;
     }
@@ -165,7 +166,7 @@ function route(name: string, parameters?: any): string {
     if (routes[name]) {
         url = routes[name];
     }
-    return applyParameterstoUrl(url, parameters);
+    return applyParametersToUrl(url, parameters);
 }
 
 /**
@@ -230,6 +231,7 @@ export default class App {
     private _templateMap: any;
     private _modules: Set<BaseModule> = new Set();
     private _errorController: ErrorController;
+    public apiResponseWrapper: APIResponseWrapper = new DefaultAPIResponseWrapper();
 
     get config(): Config {
         return this._config;
@@ -421,7 +423,7 @@ export default class App {
         for (let index in files) {
             let currentFilePath = path + "/" + files[index];
             if (fs.lstatSync(currentFilePath).isDirectory()) {
-                this.recursiveExecuteMigrations(currentFilePath);
+                await this.recursiveExecuteMigrations(currentFilePath);
                 continue;
             }
             if (currentFilePath.endsWith("ts")) continue;

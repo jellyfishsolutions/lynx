@@ -24,7 +24,7 @@ function retrieveArgumentsNamesFromRoute(path: string) {
     return args;
 }
 
-function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
+function generateStandardCallback(controller: any, route: LynxRouteMetadata, app: App) {
     return async (
         req: express.Request,
         res: express.Response,
@@ -82,13 +82,8 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
         f.apply(controller, argsValues)
             .then((r: any) => {
                 if (route.isAPI) {
-                    if (typeof r === "boolean") {
-                        return res.send({ success: r });
-                    }
-                    if (r.serialize) {
-                        r = r.serialize();
-                    }
-                    return res.send({ success: true, data: r });
+                    let body = app.apiResponseWrapper.onSuccess(r);
+                    return res.send(body);
                 } else {
                     if (r instanceof SkipResponse) {
                         r.performResponse(req, res);
@@ -111,10 +106,8 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata) {
                     res.status(status);
                 }
                 if (route.isAPI) {
-                    res.send({
-                        success: false,
-                        error: error.message
-                    });
+                    let body = app.apiResponseWrapper.onError(error);
+                    res.send(body);
                 } else {
                     next(error);
                 }
@@ -162,7 +155,7 @@ export function generateRouter(
                 route.path
             ).replace(/\/\/+/g, "/");
         }
-        const callback = generateStandardCallback(controller, route);
+        const callback = generateStandardCallback(controller, route, app);
         if (route.isMultipartForm) {
             func.call(router, route.path, app.upload.any(), callback);
         } else {

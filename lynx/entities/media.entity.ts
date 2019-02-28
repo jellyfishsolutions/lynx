@@ -7,7 +7,7 @@ import {
 } from "typeorm";
 import BaseEntity from "./base.entity";
 import User from "./user.entity";
-import * as sharp from "sharp";
+import * as Jimp from "jimp";
 import * as uuid from "uuid/v4";
 import { app } from "../app";
 
@@ -90,23 +90,16 @@ export default class Media extends BaseEntity {
             this.fileName,
             app.config.cachePath
         );
-        let img = sharp(cachedPath);
-        let data = await img.metadata();
-        img = img
-            .rotate(config.rotate)
-            .resize(
-                (data.width as number) * Math.round(config.scaleX),
-                (data.height as number) * Math.round(config.scaleY)
-            )
-            .extract({
-                left: Math.round(config.x),
-                top: Math.round(config.y),
-                width: Math.round(config.width),
-                height: Math.round(config.height)
-            });
+        let img = await Jimp.read(cachedPath);
+        img = await img.rotate(config.rotate);
+        img = await img.resize(
+            img.getWidth() * Math.round(config.scaleX),
+            img.getHeight() * Math.round(config.scaleY)
+        );
+        img =  await img.crop(Math.round(config.x), Math.round(config.y), Math.round(config.width), Math.round(config.height));
         let newFileName = uuid();
         let path = app.config.cachePath;
-        await img.toFile(path + "/" + newFileName);
+        await img.writeAsync(path + "/" + newFileName);
         await app.config.ufs.uploadFileFromCache(newFileName, path);
         let newMedia = new Media();
         newMedia.isDirectory = false;
@@ -144,15 +137,10 @@ export default class Media extends BaseEntity {
             m.fileName,
             app.config.cachePath
         );
-        let img = sharp(cachedPath);
+        let img = await Jimp.read(cachedPath);
         try {
-            let data = await img.metadata();
-            if (data.width) {
-                m.width = data.width;
-            }
-            if (data.height) {
-                m.height = data.height;
-            }
+            m.width = img.getWidth();
+            m.height = img.getHeight();
         } catch (e) {
             console.log("Error obtaining the metadata of the image.");
             console.log("Image path: "+uploadMedia.path);

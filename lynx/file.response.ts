@@ -1,10 +1,10 @@
 import { Request as ERequest, Response as EResponse } from "express";
 import AsyncResponse from "./async.response";
-import * as sharp from "sharp";
+import * as Jimp from "jimp";
 import * as fs from "fs";
 import { app } from "./app";
 
-function fileExsists(path: string): Promise<boolean> {
+function fileExsist(path: string): Promise<boolean> {
     return new Promise<boolean>((res, _) => {
         fs.exists(path, val => {
             res(val);
@@ -12,13 +12,11 @@ function fileExsists(path: string): Promise<boolean> {
     });
 }
 
-function saveToCache(path: string, s: sharp.SharpInstance) {
+function saveToCache(path: string, s: Jimp) {
     if (!app.config.chachingImages) {
         return;
     }
-    s.withMetadata()
-        .toFile(path)
-        .catch(err => console.error(err));
+    s.writeAsync(path).catch(err => console.error(err));
 }
 
 /**
@@ -32,7 +30,7 @@ export interface FileOptions {
  * Generation of a File response.
  */
 export default class FileResponse extends AsyncResponse {
-    private path: string;
+    private readonly path: string;
     private _contentType?: string;
     private _fileName: string;
     private _options?: FileOptions;
@@ -90,27 +88,28 @@ export default class FileResponse extends AsyncResponse {
         }
 
         let cachePath = path + "_" + JSON.stringify(this._options);
-        if (await fileExsists(cachePath)) {
+        if (await fileExsist(cachePath)) {
             return this.download(res, cachePath);
         }
 
-        let s: sharp.SharpInstance = {} as sharp.SharpInstance;
-        let hasSharp = false;
+        let img = {} as Jimp;
+        let hasProcessing = false;
         if (!this._options.height) {
-            s = sharp(path).resize(this._options.width);
-            hasSharp = true;
+            img = await Jimp.read(path);
+            img = img.resize(this._options.width, Jimp.AUTO);
+            hasProcessing = true;
         }
         if (this._options.width && this._options.height) {
-            hasSharp = true;
-            s = sharp(path)
-                .resize(this._options.width, this._options.height)
-                .crop(sharp.gravity.centre);
+            hasProcessing = true;
+            img = await Jimp.read(path);
+            img = img.resize(this._options.width, this._options.height);
+
         }
-        if (hasSharp) {
-            let buff = await s.toBuffer();
+        if (hasProcessing) {
+            let buff = await (img as Jimp).getBufferAsync(this._contentType as string);
             res.send(buff);
             res.end();
-            saveToCache(cachePath, s);
+            saveToCache(cachePath, img);
             return;
         }
         this.download(res, path);
