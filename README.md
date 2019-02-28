@@ -18,7 +18,7 @@ Lynx is founded by state-of-the-art libraries. It uses:
 -   **[multer](https://github.com/expressjs/multer)** to manage file upload;
 -   **[nodemailer](https://nodemailer.com)** to send emails;
 -   **[joi](https://github.com/hapijs/joi)** to validate the requests;
--   **[sharp](http://sharp.dimens.io/)** to perform image resizing and other operations.
+-   **[jimp](https://github.com/oliver-moran/jimp)** to perform image resizing and other operations.
 
 ## Out-Of-The-Box Features
 
@@ -354,3 +354,11 @@ Usage:
 ```
 <input type="email" name="email" class="form-control" value="{{old('email')}}">
 ```
+
+
+## Custom `API` response
+
+Starting from `1.0.0-rc4`, it is possible to customize the standard response of the `API` tagged routes.
+
+To achieve this feature, it is necessary to implement the `APIResponseWrapper` interface, and set the `apiResponseWrapper` property of your `App` instance.
+By default, the `DefaultResponseWrapper` implementation is used.

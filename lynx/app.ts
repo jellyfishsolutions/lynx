@@ -39,12 +39,12 @@ export function isProduction(): boolean {
 }
 
 /**
- * Retrieve the prefereed language from an express request, using the accepts-languages
+ * Retrieve the preferred language from an express request, using the accepts-languages
  * header value.
  * @param req the express request
- * @return the two letter lowecased language, or "*" (wildcard), or null
+ * @return the two letter lower-cased language, or "*" (wildcard), or null
  */
-export function getLangaugeFromRequest(req: express.Request): string {
+export function getLanguageFromRequest(req: express.Request): string {
     let lang = req.acceptsLanguages()[0];
     if (lang.indexOf("-") !== -1) {
         lang = lang.split("-")[0];
@@ -64,7 +64,7 @@ function retrieveLanguage(self: any): string {
     let lang = null;
     try {
         const req: express.Request = self.ctx.req;
-        lang = getLangaugeFromRequest(req);
+        lang = getLanguageFromRequest(req);
         if (lang === "*") {
             lang = null;
         }
@@ -225,9 +225,9 @@ export let app: App;
  */
 export default class App {
     public express: Express;
-    private _config: Config;
-    private _nunjucksEnvironment: nunjucks.Environment;
-    private _upload: multer.Instance;
+    private readonly _config: Config;
+    private readonly _nunjucksEnvironment: nunjucks.Environment;
+    private readonly _upload: multer.Instance;
     private _templateMap: any;
     private _modules: Set<BaseModule> = new Set();
     private _errorController: ErrorController;
@@ -589,7 +589,7 @@ export default class App {
 
     public translate(str: string, req: express.Request): string {
         try {
-            let lang = getLangaugeFromRequest(req);
+            let lang = getLanguageFromRequest(req);
             if (!lang) {
                 lang = this._config.defaultLanguage;
             }
