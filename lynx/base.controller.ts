@@ -273,10 +273,45 @@ export class BaseController {
     }
 
     /**
+     * Utility method to send emails from a controller.
+     * This method is similar to the `sendMail` method, but define a lower level API.
+     * Indeed, it directly accepts the text and the html of the email, and not the templates urls.
+     * @param dest the email destination (can also be an array of addresses)
+     * @param subject the subject of the email
+     * @param text the text version of the email
+     * @param html the html version of the email
+     */
+    public async sendRawMail(
+        dest: string | string[],
+        subject: string,
+        text: string,
+        html: string,
+    ) {
+        let mailOptions = {
+            from: this.app.config.mailer.sender, // sender address
+            to: dest,
+            subject: subject, // Subject line
+            text: text, // plain text body
+            html: html // html body
+        };
+        try {
+            let result = await mailClient.sendMail(mailOptions);
+            if (result) {
+                logger.debug("Preview URL: %s", getTestMessageUrl(result));
+            }
+            return true;
+        } catch (e) {
+            logger.error(e);
+        }
+        return false;
+    }
+
+    /**
      * Utility method to send an email from a controller. This method is async,
      * so use the await keyword (or eventually a promise) to correctly read the
      * return value.
      * This method uses the template engine to compile the email.
+     * NOTE: internally, this method uses the `sendRawMail` method.
      * @param req the current request
      * @param dest the email destination (can also be an array of addresses)
      * @param subjectTemplateString the subject of the email, that can also be a string template
@@ -311,23 +346,7 @@ export class BaseController {
         let text = this.app.nunjucksEnvironment.render(textTemplate, context);
         let html = this.app.nunjucksEnvironment.render(htmlTemplate, context);
 
-        let mailOptions = {
-            from: this.app.config.mailer.sender, // sender address
-            to: dest,
-            subject: subject, // Subject line
-            text: text, // plain text body
-            html: html // html body
-        };
-        try {
-            let result = await mailClient.sendMail(mailOptions);
-            if (result) {
-                logger.debug("Preview URL: %s", getTestMessageUrl(result));
-            }
-            return true;
-        } catch (e) {
-            logger.error(e);
-        }
-        return false;
+        return this.sendRawMail(dest, subject, text, html);
     }
 
     /**
