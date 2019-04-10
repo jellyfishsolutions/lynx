@@ -332,10 +332,38 @@ export class BaseController {
 
     /**
      * Utility method to obtain a translated string.
-     * @param str the string key to be transalted
+     * @param str the string key to be translated
      * @param req the original request
      */
     public tr(str: string, req: Request): string {
         return this.app.translate(str, req);
+    }
+
+    /**
+     * Utility method to obtain a translated string, formatted with parameters.
+     * Each parameter should be encoded as {0}, {1}, etc...
+     * @param str the string key to be translated
+     * @param req the original request
+     * @param args the arguments to format the string
+     */
+    public trFormat(str: string, req: Request, ...args: any): string {
+        let translated = this.tr(str, req);
+        return this.format(translated, args);
+    }
+
+    private format(fmt: string, ...args: any) {
+        if (!fmt.match(/^(?:(?:(?:[^{}]|(?:\{\{)|(?:\}\}))+)|(?:\{[0-9]+\}))+$/)) {
+            throw new Error('invalid format string.');
+        }
+        return fmt.replace(/((?:[^{}]|(?:\{\{)|(?:\}\}))+)|(?:\{([0-9]+)\})/g, (_, str, index) => {
+            if (str) {
+                return str.replace(/(?:{{)|(?:}})/g, (m:string[]) => m[0]);
+            } else {
+                if (index >= args.length) {
+                    throw new Error('argument index is out of range in format');
+                }
+                return args[index];
+            }
+        });
     }
 }

@@ -210,6 +210,19 @@ export class SchemaBuilder {
         return this;
     }
 
+    arrayOfStrings(key: string): SchemaBuilder {
+        this.keys[key] = Joi.array().items(Joi.string());
+        this.lastKey = key;
+        return this;
+    }
+
+    arrayOfStringsOptional(key: string): SchemaBuilder {
+        this.keys[key] = Joi.array().items(Joi.string());
+        this.lastKey = key;
+        return this;
+    }
+
+
     /**
      * Add the label to the last added key
      * @param label the label to use in case of error

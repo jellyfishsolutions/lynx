@@ -355,6 +355,10 @@ Usage:
 <input type="email" name="email" class="form-control" value="{{old('email')}}">
 ```
 
+### `currentHost` global function
+
+The `currentHost` function is used to retrieve the current server host. This can be used, with the `route` function, to generate an absolute
+url (for example, needed to generate an url for an email).
 
 ## Custom `API` response
 

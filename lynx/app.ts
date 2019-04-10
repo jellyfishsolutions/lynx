@@ -319,6 +319,10 @@ export default class App {
         }
         this.express = express();
         this.express.set("app", this);
+        this.express.use((_, res, next) => {
+           res.setHeader('X-Powered-By', 'lynx-framework/express');
+           next();
+        });
 
         this.express.use("/api/*", cors());
         if (this.config.jsonLimit) {
