@@ -512,6 +512,10 @@ export default class App {
     }
 
     private loadMiddlewares(path: string) {
+        if (!fs.existsSync(path)) {
+            logger.warn("The middleares folder " + path + " doesn't exists!");
+            return;
+        }
         const middlewares = fs.readdirSync(path);
         for (let index in middlewares) {
             let currentFilePath = path + "/" + middlewares[index];

@@ -81,6 +81,11 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata, app
         controller._ctxMap = {};
         f.apply(controller, argsValues)
             .then((r: any) => {
+                if (!r) {
+                    logger.error("Wait, you have a method in a controller without any return!!");
+                    logger.error(`Method info: ${route.type} ${route.path}`);
+                    throw new Error("Method without any return!");
+                }
                 if (route.isAPI) {
                     let body = app.apiResponseWrapper.onSuccess(r);
                     return res.send(body);
