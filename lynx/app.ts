@@ -444,7 +444,7 @@ export default class App {
             const m = require(currentFilePath);
             if (!m.default) {
                 throw new Error(
-                    "Plese define the migration as the export default class in file " +
+                    "Please define the migration as the export default class in file " +
                         currentFilePath +
                         "."
                 );
@@ -527,7 +527,7 @@ export default class App {
             const midd = require(currentFilePath);
             if (!midd.default) {
                 throw new Error(
-                    "Plese define the middleware as the export default class in file " +
+                    "Please define the middleware as the export default class in file " +
                         currentFilePath +
                         "."
                 );
@@ -548,7 +548,7 @@ export default class App {
             const ctrl = require(currentFilePath);
             if (!ctrl.default) {
                 throw new Error(
-                    "Plese define the controller as the export default class in file " +
+                    "Please define the controller as the export default class in file " +
                         currentFilePath +
                         "."
                 );

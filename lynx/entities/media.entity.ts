@@ -29,7 +29,7 @@ export default class Media extends BaseEntity {
     @Column() originalName: string;
     @Column({ unique: true, default: null })
     slug: string;
-    @Column({ type: "tinyint", default: false })
+    @Column({ type: "smallint", default: 0 })
     private is_directory: number;
 
     get isDirectory(): boolean {
@@ -44,10 +44,10 @@ export default class Media extends BaseEntity {
         }
     }
 
-    @Column() mimetype: string;
-    @Column() size: number;
-    @Column() fileName: string;
-    @Column() path: string;
+    @Column({nullable: true}) mimetype: string;
+    @Column({nullable: true}) size: number;
+    @Column({nullable: true}) fileName: string;
+    @Column({nullable: true}) path: string;
 
     @ManyToOne(_ => Media, media => media._children)
     parent: Media;
