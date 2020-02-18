@@ -165,7 +165,7 @@ export class DatatableConfiguration {
             let order = ordersBy[0].split(":");
             this.setOrderBy(order[0], order[1]);
             query = query.orderBy(
-                this.alias  + "." + r[0],
+                this.alias  + "." + order[0],
                 order[1] == "desc" ? "DESC" : "ASC"
             );
             for (let i = 1; i < ordersBy.length; i++) {
