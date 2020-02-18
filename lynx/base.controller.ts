@@ -218,7 +218,7 @@ export class BaseController {
      * @param msg the string (can be localized) of the message
      * @param req the request
      */
-    public addSuccessMessagge(msg: string, req: Request) {
+    public addSuccessMessage(msg: string, req: Request) {
         this.addFlashMessage({ type: FlashType.success, message: msg }, req);
     }
 
