@@ -73,8 +73,9 @@ export class DatatableConfiguration {
     private _classes: string[] = [];
     private mapTransformers: any = {};
     private pagination: PaginationConfiguration = new PaginationConfiguration();
+    private alias: string = "e";
 
-    constructor(repository: Repository<any>, req: Request) {
+    constructor(repository: Repository<any>, req: Request, alias?: string) {
         this.repository = repository;
         this.req = req;
         this.setupPageRequested();
@@ -82,6 +83,9 @@ export class DatatableConfiguration {
         this.urlNoOrder = getUrlWithoutOrder(this.req);
         this.urlNoPageNoOrder = getUrlWithoutPageOrOrder(this.req);
         this.urlNoFilter = getUrlWithoutFilter(this.req);
+        if (alias) {
+            this.alias = alias;
+        }
     }
 
     public setPageSize(size: number) {
@@ -161,14 +165,14 @@ export class DatatableConfiguration {
             let order = ordersBy[0].split(":");
             this.setOrderBy(order[0], order[1]);
             query = query.orderBy(
-                "e." + order[0],
+                this.alias  + "." + r[0],
                 order[1] == "desc" ? "DESC" : "ASC"
             );
             for (let i = 1; i < ordersBy.length; i++) {
                 let order = ordersBy[i].split(":");
                 this.setOrderBy(order[0], order[1]);
                 query = query.addOrderBy(
-                    "e." + order[0],
+                    this.alias  + "." + order[0],
                     order[1] == "desc" ? "DESC" : "ASC"
                 );
             }
@@ -192,13 +196,13 @@ export class DatatableConfiguration {
             let f = filtersBy[0].split(":");
             let o: any = {};
             o[f[0] + "_" + 0] = f[1];
-            query = query.where("e." + f[0] + " = :" + f[0] + "_" + 0, o);
+            query = query.where(this.alias  + "." + f[0] + " = :" + f[0] + "_" + 0, o);
             for (let i = 1; i < filtersBy.length; i++) {
                 let f = filtersBy[i].split(":");
                 let o: any = {};
                 o[f[0] + "_" + i] = f[1];
                 query = query.andWhere(
-                    "e." + f[0] + " = :" + f[0] + "_" + i,
+                    this.alias  + "." + f[0] + " = :" + f[0] + "_" + i,
                     o
                 );
             }
@@ -211,10 +215,10 @@ export class DatatableConfiguration {
             let select: string[] = [];
             this.map.forEach(v => {
                 if (!v.startsWith(":")) {
-                    select.push("e." + v.replace("-", ""));
+                    select.push(this.alias  + "." + v.replace("-", ""));
                 }
             });
-            query = this.repository.createQueryBuilder("e").select(select);
+            query = this.repository.createQueryBuilder(this.alias).select(select);
         }
 
         query = this.addFilterBy(query);
