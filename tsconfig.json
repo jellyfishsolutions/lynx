@@ -16,7 +16,6 @@
         "sourceMap": false,
         "inlineSources": false,
         "allowSyntheticDefaultImports": true,
-        "declaration": true,
         "types": ["node"]
     },
     "compileOnSave": true,

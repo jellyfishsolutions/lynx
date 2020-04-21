@@ -1,5 +1,6 @@
 import { Express } from "express";
 import * as express from "express";
+import { createServer, Server } from "http";
 import * as nunjucks from "nunjucks";
 import * as fs from "fs";
 import "reflect-metadata";
@@ -234,6 +235,7 @@ export let app: App;
  */
 export default class App {
     public express: Express;
+    public httpServer: Server; 
     private readonly _config: Config;
     private readonly _nunjucksEnvironment: nunjucks.Environment;
     private readonly _upload: multer.Instance;
@@ -318,6 +320,7 @@ export default class App {
             logger.debug("The DB service is disabled");
         }
         this.express = express();
+        this.httpServer = createServer(this.express);
         this.express.set("app", this);
         this.express.use((_, res, next) => {
            res.setHeader('X-Powered-By', 'lynx-framework/express');
@@ -591,12 +594,7 @@ export default class App {
                 });
         });
 
-        this.express.listen(port, (err: Error) => {
-            if (err) {
-                logger.error(err);
-                process.exit(1);
-                return;
-            }
+        this.httpServer.listen(port, () => {
             logger.info(`server is listening on ${port}`);
         });
     }
