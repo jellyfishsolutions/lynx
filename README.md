@@ -208,6 +208,29 @@ async someMethod() {
 }
 ```
 
+### `IsDisabledOn(function)`
+
+Add to the decorated method a verification function that will be executed BEFORE the route.
+The function shall return a boolean value and it is evaluated during the server startup.
+If the function return true, the decorated method is ignored and is not added to the current controller.
+
+> This method is available from version 1.1.5.
+
+Example:
+
+```
+function disableOnProduction() {
+    return isProduction == true;
+}
+...
+@IsDisabledOn(disableOnProduction)
+@GET("/test")
+async testMethod() {
+    ...
+}
+```
+
+
 ### `Body(name, schema)`
 
 The `Body` decorator inject the request body as a parameter of the decorated method. The body object

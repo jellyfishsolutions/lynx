@@ -129,6 +129,11 @@ export function generateRouter(
     const router = express.Router();
 
     for (let route of originalController.routes) {
+        if (route.isDisabledOn) {
+            if (route.isDisabledOn()) {
+                continue;
+            }
+        }
         let func: Function;
         switch (route.type) {
             case HttpVerb.GET:

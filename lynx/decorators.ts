@@ -13,6 +13,7 @@ export interface LynxRouteMetadata {
     isAPI: boolean;
     isMultipartForm: boolean;
     verifiers: { fun: Function; isAsync: boolean }[];
+    isDisabledOn?: Function;
     name?: string;
 }
 
@@ -43,7 +44,8 @@ function setTarget(_: any, type: HttpVerb, path: string, method: any) {
         body: undefined,
         isAPI: false,
         isMultipartForm: false,
-        verifiers: []
+        verifiers: [],
+        isDisabledOn: undefined
     });
 }
 
@@ -78,6 +80,11 @@ function setVerify(_: any, func: Function) {
 function setAsyncVerify(_: any, func: Function) {
     if (!routes) return;
     routes[routes.length - 1].verifiers.push({ fun: func, isAsync: true });
+}
+
+function setIsDisabledOn(_:any, func: Function) {
+    if (!routes) return;
+    routes[routes.length - 1].isDisabledOn = func;
 }
 
 /**
@@ -198,6 +205,18 @@ export function Verify(func: Function) {
 export function AsyncVerify(func: Function) {
     return (target: any, _: any, __: any) => {
         setAsyncVerify(target, func);
+    };
+}
+
+/**
+ * Add to the decorated method a "disabled" function, that is verified at startup
+ * time. If the function return a truly value, the decorated method is not registered
+ * as an endpoint.
+ * @param func the disabling function to be executed. It shall return a boolean value.
+ */
+export function IsDisabledOn(func: Function) {
+    return (target: any, _: any, __: any) => {
+        setIsDisabledOn(target, func);
     };
 }
 
