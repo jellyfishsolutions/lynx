@@ -1,4 +1,4 @@
-import * as Joi from "joi";
+import * as Joi from "@hapi/joi";
 
 import * as itErrors from "./locale/joi_it";
 
@@ -252,7 +252,7 @@ export interface ValidationError {
 export class ValidateObject<T> {
     private _obj: T;
     private schema: Joi.Schema;
-    private valid: Joi.ValidationResult<any>;
+    private valid: Joi.ValidationResult;
 
     /**
      * @param obj the object to validate
@@ -278,7 +278,7 @@ export class ValidateObject<T> {
     }
 
     private validate(options: any) {
-        this.valid = Joi.validate(this._obj, this.schema, options);
+        this.valid = this.schema.validate(this._obj, options);
     }
 
     /**
@@ -306,7 +306,7 @@ export class ValidateObject<T> {
         if (this.isValid) {
             return errors;
         }
-        for (let err of this.valid.error.details) {
+        for (let err of this.valid.error!!.details) {
             errors.push({
                 name: err.context && err.context.key ? err.context.key : "",
                 message: err.message
