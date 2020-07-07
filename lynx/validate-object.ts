@@ -247,7 +247,7 @@ export interface ValidationError {
 /**
  * This class is used to validate an object using a given schema.
  * It is used by Lynx to automatically validate the body of any requests, using
- * the Body decodator.
+ * the Body decorator.
  */
 export class ValidateObject<T> {
     private _obj: T;
@@ -282,7 +282,7 @@ export class ValidateObject<T> {
     }
 
     /**
-     * Verify that the object rescpect the schema.
+     * Verify that the object respect the schema.
      * @return true if the object is valid, false otherwise.
      */
     get isValid() {
