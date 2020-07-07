@@ -61,3 +61,4 @@ typings/
 
 !package.json
 dist/
+develop/

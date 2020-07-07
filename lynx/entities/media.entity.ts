@@ -8,7 +8,8 @@ import {
 import BaseEntity from "./base.entity";
 import User from "./user.entity";
 import * as Jimp from "jimp";
-import * as uuid from "uuid/v4";
+import { v4 } from "uuid";
+const uuid = v4;
 import { app } from "../app";
 
 export interface ResizeConfig {

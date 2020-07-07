@@ -1,6 +1,6 @@
 import { Express } from "express";
 import * as express from "express";
-import { createServer, Server } from "http";
+const http = require("http");
 import * as nunjucks from "nunjucks";
 import * as fs from "fs";
 import "reflect-metadata";
@@ -235,7 +235,7 @@ export let app: App;
  */
 export default class App {
     public express: Express;
-    public httpServer: Server; 
+    public httpServer: any; 
     private readonly _config: Config;
     private readonly _nunjucksEnvironment: nunjucks.Environment;
     private readonly _upload: multer.Instance;
@@ -320,7 +320,7 @@ export default class App {
             logger.debug("The DB service is disabled");
         }
         this.express = express();
-        this.httpServer = createServer(this.express);
+        this.httpServer = http.createServer(this.express);
         this.express.set("app", this);
         this.express.use((_, res, next) => {
            res.setHeader('X-Powered-By', 'lynx-framework/express');
