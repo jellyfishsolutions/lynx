@@ -286,7 +286,7 @@ export class ValidateObject<T> {
      * @return true if the object is valid, false otherwise.
      */
     get isValid() {
-        return this.valid.error === null;
+        return !this.valid.error;
     }
 
     /**
@@ -306,11 +306,13 @@ export class ValidateObject<T> {
         if (this.isValid) {
             return errors;
         }
-        for (let err of this.valid.error!!.details) {
-            errors.push({
-                name: err.context && err.context.key ? err.context.key : "",
-                message: err.message
-            });
+        if (this.valid.error) {
+            for (let err of this.valid.error!!.details) {
+                errors.push({
+                    name: err.context && err.context.key ? err.context.key : "",
+                    message: err.message
+                });
+            }
         }
         return errors;
     }
@@ -318,7 +320,7 @@ export class ValidateObject<T> {
     /**
      * Getter that returns a map of errors. This prop contains the save information
      * as the `errors` prop, but with a different format.
-     * @return a map or loclaized errors.
+     * @return a map or localized errors.
      */
     get errorsMap(): any {
         let map: any = {};
