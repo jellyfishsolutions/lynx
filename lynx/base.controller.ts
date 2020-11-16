@@ -21,6 +21,7 @@ import {
 
 import { logger } from "./logger";
 import Logger from "./logger";
+import XmlResponse from "./xml.response";
 
 let mailClient: Transporter;
 let guard = false;
@@ -270,6 +271,29 @@ export class BaseController {
      */
     public next(): SkipResponse {
         return new SkipResponse();
+    }
+
+    /**
+     * Generate a response as an Xml file, but starting from a standard Nunjuks template.
+     * This response is very similar to the standard render response. The main difference is the
+     * the `contentType`, setted do `application/xml`.
+     * Moreover, the flash messages are ignored.
+     * @param view the name of the view
+     * @param req the request object
+     * @param context a plain object containing any necessary data needed by the view
+     */
+    public xml(view: string, req: Request, context?: any): XmlResponse {
+        if (!view.endsWith(".njk")) {
+            view = view + ".njk";
+        }
+        if (!context) {
+            context = {};
+        }
+        context.req = req;
+        for (let key in req.lynxContext) {
+            context[key] = req.lynxContext[key];
+        }
+        return new XmlResponse(view, context);
     }
 
     /**
