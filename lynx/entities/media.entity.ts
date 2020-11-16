@@ -12,6 +12,9 @@ import { v4 } from "uuid";
 const uuid = v4;
 import { app } from "../app";
 
+import * as fs from 'fs';
+import { lookup } from 'mime-types';
+
 export interface ResizeConfig {
     rotate: number;
     scaleX: number;
@@ -45,10 +48,10 @@ export default class Media extends BaseEntity {
         }
     }
 
-    @Column({nullable: true}) mimetype: string;
-    @Column({nullable: true}) size: number;
-    @Column({nullable: true}) fileName: string;
-    @Column({nullable: true}) path: string;
+    @Column({ nullable: true }) mimetype: string;
+    @Column({ nullable: true }) size: number;
+    @Column({ nullable: true }) fileName: string;
+    @Column({ nullable: true }) path: string;
 
     @ManyToOne(_ => Media, media => media._children)
     parent: Media;
@@ -76,7 +79,7 @@ export default class Media extends BaseEntity {
             return super.remove();
         }
         let k = await super.remove();
-        app.config.ufs.unlink(this.path, () => {});
+        app.config.ufs.unlink(this.path, () => { });
         return k;
     }
 
@@ -97,7 +100,7 @@ export default class Media extends BaseEntity {
             img.getWidth() * Math.round(config.scaleX),
             img.getHeight() * Math.round(config.scaleY)
         );
-        img =  await img.crop(Math.round(config.x), Math.round(config.y), Math.round(config.width), Math.round(config.height));
+        img = await img.crop(Math.round(config.x), Math.round(config.y), Math.round(config.width), Math.round(config.height));
         let newFileName = uuid();
         let path = app.config.cachePath;
         await img.writeAsync(path + "/" + newFileName);
@@ -117,6 +120,12 @@ export default class Media extends BaseEntity {
         return await newMedia.save();
     }
 
+    /**
+     * Generate a new MediaEntity from an uploaded file using the Multer library
+     * @param uploadMedia  the multer File
+     * @param user  the user performing the request (aka the onwer of the file)
+     * @param directory  the (optional) virtual parent directory
+     */
     static async persist(
         uploadMedia: Express.Multer.File,
         user: User,
@@ -144,11 +153,33 @@ export default class Media extends BaseEntity {
             m.height = img.getHeight();
         } catch (e) {
             console.log("Error obtaining the metadata of the image.");
-            console.log("Image path: "+uploadMedia.path);
+            console.log("Image path: " + uploadMedia.path);
             console.error(e);
         }
-        await m.save();
-        return m;
+        return m.save();
+    }
+
+    /**
+     * Generate a new MediaEntity from a local temporary file
+     * @param originalName the original name of the file
+     * @param path the temporary path of the file
+     * @param user the user perfrming the request (aka the owner of the file)
+     * @param directory the (optional) virtual parent directory
+     */
+    static async persistTempFile(originalName: string, path: string, user: User, directory?: Media): Promise<Media> {
+        let m = new Media();
+        m.originalName = originalName;
+        m.isDirectory = false;
+        m.mimetype = lookup(path) || '';
+        m.size = (await stat(path)).size;
+        let uploadedFile = await app.config.ufs.uploadTempFile(path);
+        m.fileName = uploadedFile.fileName;
+        m.path = uploadedFile.path;
+        m.owner = user;
+        if (directory) {
+            m.parent = directory;
+        }
+        return m.save();
     }
 
     static async mkdir(
@@ -239,4 +270,16 @@ function copiedName(name: string): string {
         return name + " 1";
     }
     return name.substring(0, index) + " 1" + name.substring(index);
+}
+
+
+function stat(path: string): Promise<fs.Stats> {
+    return new Promise((ok, fail) => {
+        fs.stat(path, (err, info) => {
+            if (err) {
+                return fail(err);
+            }
+            ok(info);
+        });
+    });
 }

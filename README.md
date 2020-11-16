@@ -389,3 +389,15 @@ Starting from `1.0.0-rc4`, it is possible to customize the standard response of 
 
 To achieve this feature, it is necessary to implement the `APIResponseWrapper` interface, and set the `apiResponseWrapper` property of your `App` instance.
 By default, the `DefaultResponseWrapper` implementation is used.
+
+## Lynx Modules
+Lynx supports custom module to add functionality at the current application. A module act exactly as a standard Lynx application, with its standatd `controllers`, `middlewares`, `entities`, `views`, `locale` and `public` folders.
+Modules shall be loaded at startup time, and shall be injected in the Lynx application constructor:
+
+```
+const app = new App(myConfig, [new DatagridModule(), new AdminUIModule()] as BaseModule[]);
+```
+
+In this example, the Lynx application is created with the `DatagridModule` and the `AdminUIModule` modules.
+
+Modules are the standard to provide additional functionaly to the Lynx framework.

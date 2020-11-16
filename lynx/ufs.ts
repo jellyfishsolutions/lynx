@@ -1,5 +1,7 @@
 import * as fs from "fs";
 import { app } from "./app";
+import { v4 } from "uuid";
+const uuid = v4;
 
 export default interface UFS {
     unlink(path: string, cb: (err: Error) => void): void;
@@ -7,6 +9,7 @@ export default interface UFS {
     getToCache(path: string, cachePath: string): Promise<string>;
     uploadFile(uploadMedia: any): Promise<any>;
     uploadFileFromCache(path: string, cachePath: string): Promise<void>;
+    uploadTempFile(path: string): Promise<{ fileName: string, path: string }>;
 }
 
 export interface Stat {
@@ -53,6 +56,22 @@ export class LocalUFS implements UFS {
                     return res();
                 }
             );
+        });
+    }
+
+    uploadTempFile(path: string): Promise<{ fileName: string, path: string }> {
+        let fileName = uuid();
+        let newPath = app.config.uploadPath + '/' + fileName;
+        return new Promise((res, rej) => {
+            fs.copyFile(path, newPath, err => {
+                if (err) {
+                    return rej(err);
+                }
+                return res({
+                    fileName: fileName,
+                    path: newPath
+                });
+            });
         });
     }
 }
