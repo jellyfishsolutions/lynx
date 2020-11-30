@@ -230,7 +230,6 @@ async testMethod() {
 }
 ```
 
-
 ### `Body(name, schema)`
 
 The `Body` decorator inject the request body as a parameter of the decorated method. The body object
@@ -391,6 +390,7 @@ To achieve this feature, it is necessary to implement the `APIResponseWrapper` i
 By default, the `DefaultResponseWrapper` implementation is used.
 
 ## Lynx Modules
+
 Lynx supports custom module to add functionality at the current application. A module act exactly as a standard Lynx application, with its standatd `controllers`, `middlewares`, `entities`, `views`, `locale` and `public` folders.
 Modules shall be loaded at startup time, and shall be injected in the Lynx application constructor:
 
@@ -401,3 +401,14 @@ const app = new App(myConfig, [new DatagridModule(), new AdminUIModule()] as Bas
 In this example, the Lynx application is created with the `DatagridModule` and the `AdminUIModule` modules.
 
 Modules are the standard to provide additional functionaly to the Lynx framework.
+
+## Mail Client
+
+Since day 0, Lynx supports a very simple API to send emails from controllers, with the methods `sendMail` and `sendMailRaw`. Starting from `1.2.0`, this methods are available outside the controller context.
+
+The `App` class define the `mailClient` property of type `MailClient`. This class contains the methods `sendMail` and `sendMailRaw` to respectivly send emails.
+The first method uses the `nunjuks` template system to send emails, both for plain text, html text and subject. The latter is a low level version of the API, directly sending the email body and subject. Both APIs support multiple destination addresses.
+
+The mail client is configured thought the `ConfigBuilder` of the application.
+
+By default, a standard SMTP sender client is used (using the usual NodeMailer library). It is possible to use a custom sender class (that implements the `MailClient` interface) using the `setMailClientFactoryConstructor` method of the `ConfigBuilder`.

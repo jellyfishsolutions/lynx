@@ -1,42 +1,46 @@
-import { Express } from "express";
-import * as express from "express";
-const http = require("http");
-import * as nunjucks from "nunjucks";
-import * as fs from "fs";
-import "reflect-metadata";
-import { createConnection } from "typeorm";
-import * as session from "express-session";
-import * as bodyParser from "body-parser";
-import * as multer from "multer";
-import * as cors from "cors";
-import * as moment from "moment";
-const flash = require("express-flash");
-import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
-import Config from "./config";
-import BaseModule from "./base.module";
-import Migration from "./migration";
-import MigrationEntity from "./entities/migration.entity";
-import ErrorController from "./error.controller";
+import { Express } from 'express';
+import * as express from 'express';
+const http = require('http');
+import * as nunjucks from 'nunjucks';
+import * as fs from 'fs';
+import 'reflect-metadata';
+import { createConnection } from 'typeorm';
+import * as session from 'express-session';
+import * as bodyParser from 'body-parser';
+import * as multer from 'multer';
+import * as cors from 'cors';
+import * as moment from 'moment';
+const flash = require('express-flash');
+import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
+import Config from './config';
+import BaseModule from './base.module';
+import Migration from './migration';
+import MigrationEntity from './entities/migration.entity';
+import ErrorController from './error.controller';
 
-import * as expressGenerator from "./express-generator";
-import * as graphqlGenerator from "./graphql/generator";
+import * as expressGenerator from './express-generator';
+import * as graphqlGenerator from './graphql/generator';
 
-import { setup } from "./entities/setup";
-import User from "./entities/user.entity";
-import { sign } from "jsonwebtoken";
+import { setup } from './entities/setup';
+import User from './entities/user.entity';
+import { sign } from 'jsonwebtoken';
 
 const translations: any = {};
 const routes: any = {};
 
-import { logger } from "./logger";
-import {APIResponseWrapper, DefaultAPIResponseWrapper} from "./api-response-wrapper";
+import { logger } from './logger';
+import {
+    APIResponseWrapper,
+    DefaultAPIResponseWrapper,
+} from './api-response-wrapper';
+import { MailClient } from './mail-client';
 
 /**
  * Utility function to check if we are in the production environment.
  * @return true if the NODE_ENV is set to "production", false otherwise
  */
 export function isProduction(): boolean {
-    return process.env.NODE_ENV === "production";
+    return process.env.NODE_ENV === 'production';
 }
 
 /**
@@ -47,8 +51,8 @@ export function isProduction(): boolean {
  */
 export function getLanguageFromRequest(req: express.Request): string {
     let lang = req.acceptsLanguages()[0];
-    if (lang.indexOf("-") !== -1) {
-        lang = lang.split("-")[0];
+    if (lang.indexOf('-') !== -1) {
+        lang = lang.split('-')[0];
     }
     if (lang) {
         lang = lang.trim().toLowerCase();
@@ -66,15 +70,15 @@ function retrieveLanguage(self: any): string {
     try {
         const req: express.Request = self.ctx.req;
         lang = getLanguageFromRequest(req);
-        if (lang === "*") {
+        if (lang === '*') {
             lang = null;
         }
     } catch (e) {}
     if (!lang) {
-        lang = self.getVariables()["lang"];
+        lang = self.getVariables()['lang'];
     }
     if (!lang) {
-        let app: App = self.ctx.req.app.get("app");
+        let app: App = self.ctx.req.app.get('app');
         lang = app.config.defaultLanguage;
     }
     return lang;
@@ -101,12 +105,12 @@ function performTranslation(str: string, translations: any): string {
     if (translation) {
         return translation;
     }
-    const start = str.indexOf("{{");
-    const end = str.indexOf("}}");
+    const start = str.indexOf('{{');
+    const end = str.indexOf('}}');
     if (start != -1 && end != -1) {
         let key = str.substring(start + 2, end);
         translation = translations[key.trim()];
-        return str.replace("{{" + key + "}}", translation);
+        return str.replace('{{' + key + '}}', translation);
     }
     return str;
 }
@@ -122,7 +126,7 @@ function date(d: Date, format?: string): string {
     let lang = retrieveLanguage(this);
     let m = moment(d).locale(lang);
     if (!format) {
-        format = "lll";
+        format = 'lll';
     }
     return m.format(format);
 }
@@ -138,19 +142,19 @@ function applyParametersToUrl(url: string, parameters: any): string {
     if (!parameters) {
         return url;
     }
-    if (url.indexOf("?") == -1) {
-        url += "?";
+    if (url.indexOf('?') == -1) {
+        url += '?';
     } else {
-        url += "&";
+        url += '&';
     }
     for (let key in parameters) {
-        if (url.indexOf(":" + key) == -1) {
+        if (url.indexOf(':' + key) == -1) {
             url += `${key}=${parameters[key]}&`;
         } else {
-            url = url.replace(":" + key, parameters[key]);
+            url = url.replace(':' + key, parameters[key]);
         }
     }
-    if (url.endsWith("?") || url.endsWith("&")) {
+    if (url.endsWith('?') || url.endsWith('&')) {
         url = url.substring(0, url.length - 1);
     }
     return url;
@@ -208,10 +212,10 @@ function format(val: number, decimal: number = 2): string {
  */
 function resolvePath(path: string): string {
     let normalizedPath = path;
-    if (normalizedPath.endsWith(".njk")) {
+    if (normalizedPath.endsWith('.njk')) {
         normalizedPath = normalizedPath.substring(0, normalizedPath.length - 4);
     }
-    let app: App = this.ctx.req.app.get("app");
+    let app: App = this.ctx.req.app.get('app');
     let resolved = app.templateMap[path];
     if (resolved) {
         return resolved;
@@ -235,7 +239,7 @@ export let app: App;
  */
 export default class App {
     public express: Express;
-    public httpServer: any; 
+    public httpServer: any;
     private readonly _config: Config;
     private readonly _nunjucksEnvironment: nunjucks.Environment;
     private readonly _upload: multer.Instance;
@@ -243,6 +247,7 @@ export default class App {
     private _modules: Set<BaseModule> = new Set();
     private _errorController: ErrorController;
     public apiResponseWrapper: APIResponseWrapper = new DefaultAPIResponseWrapper();
+    private _mailClient: MailClient;
 
     get config(): Config {
         return this._config;
@@ -260,6 +265,10 @@ export default class App {
         return this._upload;
     }
 
+    get mailClient(): MailClient {
+        return this._mailClient;
+    }
+
     /**
      * This property allow the customization of the standard error controller.
      * You need to create the controller using its standard constructor:
@@ -275,26 +284,26 @@ export default class App {
 
         if (modules) {
             this._modules = new Set(modules);
-            this._modules.forEach(module => module.mount(this._config));
+            this._modules.forEach((module) => module.mount(this._config));
         }
 
-        config.db.entities.unshift(__dirname + "/entities/*.entity.js");
-        config.middlewaresFolders.unshift(__dirname + "/middlewares");
-        config.viewFolders.unshift(__dirname + "/views");
+        config.db.entities.unshift(__dirname + '/entities/*.entity.js');
+        config.middlewaresFolders.unshift(__dirname + '/middlewares');
+        config.viewFolders.unshift(__dirname + '/views');
 
         if (!config.disabledDb) {
             createConnection(<any>config.db)
-                .then(_ => {
+                .then((_) => {
                     // here you can start to work with your entities
-                    logger.info("Connection to the db established!");
+                    logger.info('Connection to the db established!');
                     setup(config.db.entities)
-                        .then(_ => {
-                            this._modules.forEach(module =>
+                        .then((_) => {
+                            this._modules.forEach((module) =>
                                 module.onDatabaseConnected()
                             );
                             if (!config.disableMigrations) {
                                 this.executeMigrations()
-                                    .catch(err => {
+                                    .catch((err) => {
                                         logger.error(err);
                                         process.exit(1);
                                     })
@@ -307,27 +316,27 @@ export default class App {
                                 this._config.onDatabaseInit();
                             }
                         })
-                        .catch(error => {
+                        .catch((error) => {
                             logger.error(error);
                             process.exit(1);
                         });
                 })
-                .catch(error => {
+                .catch((error) => {
                     logger.error(error);
                     process.exit(1);
                 });
         } else {
-            logger.debug("The DB service is disabled");
+            logger.debug('The DB service is disabled');
         }
         this.express = express();
         this.httpServer = http.createServer(this.express);
-        this.express.set("app", this);
+        this.express.set('app', this);
         this.express.use((_, res, next) => {
-           res.setHeader('X-Powered-By', 'lynx-framework/express');
-           next();
+            res.setHeader('X-Powered-By', 'lynx-framework/express');
+            next();
         });
 
-        this.express.use("/api/*", cors());
+        this.express.use('/api/*', cors());
         if (this.config.jsonLimit) {
             this.express.use(bodyParser.json({ limit: this.config.jsonLimit }));
         } else {
@@ -339,7 +348,7 @@ export default class App {
         let app_session_options: any = {
             secret: config.sessionSecret,
             resave: false,
-            saveUninitialized: true
+            saveUninitialized: true,
         };
         if (config.sessionStore) {
             app_session_options.store = config.sessionStore;
@@ -349,12 +358,12 @@ export default class App {
         this.express.use(flash());
 
         this._upload = multer({ dest: config.uploadPath });
-        fs.exists(config.cachePath, exists => {
+        fs.exists(config.cachePath, (exists) => {
             if (!exists) {
-                fs.mkdir(config.cachePath, err => {
+                fs.mkdir(config.cachePath, (err) => {
                     if (err) {
                         logger.error(
-                            "Error creating the local cache directory",
+                            'Error creating the local cache directory',
                             err
                         );
                     }
@@ -370,17 +379,17 @@ export default class App {
         this._nunjucksEnvironment = nunjucks.configure(config.viewFolders, {
             autoescape: true,
             watch: true,
-            express: this.express
+            express: this.express,
         });
-        this._nunjucksEnvironment.addFilter("tr", translate);
-        this._nunjucksEnvironment.addFilter("json", JSON.stringify);
-        this._nunjucksEnvironment.addFilter("format", format);
-        this._nunjucksEnvironment.addFilter("date", date);
+        this._nunjucksEnvironment.addFilter('tr', translate);
+        this._nunjucksEnvironment.addFilter('json', JSON.stringify);
+        this._nunjucksEnvironment.addFilter('format', format);
+        this._nunjucksEnvironment.addFilter('date', date);
         this.loadTranslations(config.translationFolders);
-        this._nunjucksEnvironment.addGlobal("route", route);
-        this._nunjucksEnvironment.addGlobal("old", old);
-        this._nunjucksEnvironment.addGlobal("resolvePath", resolvePath);
-        this._nunjucksEnvironment.addGlobal("currentHost", currentHost);
+        this._nunjucksEnvironment.addGlobal('route', route);
+        this._nunjucksEnvironment.addGlobal('old', old);
+        this._nunjucksEnvironment.addGlobal('resolvePath', resolvePath);
+        this._nunjucksEnvironment.addGlobal('currentHost', currentHost);
 
         for (let path of config.middlewaresFolders) {
             this.loadMiddlewares(path);
@@ -393,33 +402,38 @@ export default class App {
             const schema = graphqlGenerator.generateSchema(config.db.entities);
             // The GraphQL endpoint
             this.express.use(
-                "/graphql",
+                '/graphql',
                 bodyParser.json(),
                 graphqlExpress({ schema })
             );
 
             // GraphiQL, a visual editor for queries
             this.express.use(
-                "/graphiql",
-                graphiqlExpress({ endpointURL: "/graphql" })
+                '/graphiql',
+                graphiqlExpress({ endpointURL: '/graphql' })
             );
         }
 
         this._errorController = new ErrorController(this);
+
+        this._mailClient = config.mailFactoryConstructor();
+        this._mailClient.init().catch((err) => {
+            logger.warn('Error trying to initialize the mailClient', err);
+        });
     }
 
     private recursiveGenerateTemplateMap(path: string, currentPath: string) {
         const files = fs.readdirSync(path);
         for (let index in files) {
-            let currentFilePath = path + "/" + files[index];
+            let currentFilePath = path + '/' + files[index];
             if (fs.lstatSync(currentFilePath).isDirectory()) {
                 this.recursiveGenerateTemplateMap(
                     currentFilePath,
-                    currentPath + files[index] + "/"
+                    currentPath + files[index] + '/'
                 );
                 continue;
             }
-            let name = files[index].replace(".njk", "");
+            let name = files[index].replace('.njk', '');
             this._templateMap[currentPath + name] = currentFilePath;
         }
     }
@@ -427,29 +441,29 @@ export default class App {
     private generateTemplateMap(paths: string[]) {
         this._templateMap = {};
         for (let path of paths) {
-            this.recursiveGenerateTemplateMap(path, "/");
+            this.recursiveGenerateTemplateMap(path, '/');
         }
     }
 
     private async recursiveExecuteMigrations(path: string) {
         if (!fs.existsSync(path)) {
-            logger.warn("The migration folder " + path + " doesn't exists!");
+            logger.warn('The migration folder ' + path + " doesn't exists!");
             return;
         }
         const files = fs.readdirSync(path).sort((a, b) => a.localeCompare(b));
         for (let index in files) {
-            let currentFilePath = path + "/" + files[index];
+            let currentFilePath = path + '/' + files[index];
             if (fs.lstatSync(currentFilePath).isDirectory()) {
                 await this.recursiveExecuteMigrations(currentFilePath);
                 continue;
             }
-            if (currentFilePath.endsWith("ts")) continue;
+            if (currentFilePath.endsWith('ts')) continue;
             const m = require(currentFilePath);
             if (!m.default) {
                 throw new Error(
-                    "Please define the migration as the export default class in file " +
+                    'Please define the migration as the export default class in file ' +
                         currentFilePath +
-                        "."
+                        '.'
                 );
             }
             let entity = await MigrationEntity.findByName(currentFilePath);
@@ -466,12 +480,12 @@ export default class App {
                 await migration.up();
                 entity.setExecuted();
                 await entity.save();
-                logger.info("Migration " + currentFilePath + " executed!");
+                logger.info('Migration ' + currentFilePath + ' executed!');
             } catch (e) {
                 entity.setFailed();
                 await entity.save();
                 logger.error(
-                    "Error executing the migration " + currentFilePath
+                    'Error executing the migration ' + currentFilePath
                 );
                 throw e;
             }
@@ -496,13 +510,13 @@ export default class App {
             const files = fs.readdirSync(path);
             for (let index in files) {
                 let nameWithExtension: string = files[index];
-                if (!nameWithExtension.endsWith("json")) continue;
+                if (!nameWithExtension.endsWith('json')) continue;
                 let name = nameWithExtension.substring(
                     0,
-                    nameWithExtension.indexOf(".")
+                    nameWithExtension.indexOf('.')
                 );
                 let tmp = JSON.parse(
-                    fs.readFileSync(path + "/" + nameWithExtension, "utf8")
+                    fs.readFileSync(path + '/' + nameWithExtension, 'utf8')
                 );
                 if (!translations[name]) {
                     translations[name] = {};
@@ -516,23 +530,23 @@ export default class App {
 
     private loadMiddlewares(path: string) {
         if (!fs.existsSync(path)) {
-            logger.warn("The middleares folder " + path + " doesn't exists!");
+            logger.warn('The middleares folder ' + path + " doesn't exists!");
             return;
         }
         const middlewares = fs.readdirSync(path);
         for (let index in middlewares) {
-            let currentFilePath = path + "/" + middlewares[index];
+            let currentFilePath = path + '/' + middlewares[index];
             if (fs.lstatSync(currentFilePath).isDirectory()) {
                 this.loadMiddlewares(currentFilePath);
                 continue;
             }
-            if (middlewares[index].endsWith("ts")) continue;
+            if (middlewares[index].endsWith('ts')) continue;
             const midd = require(currentFilePath);
             if (!midd.default) {
                 throw new Error(
-                    "Please define the middleware as the export default class in file " +
+                    'Please define the middleware as the export default class in file ' +
                         currentFilePath +
-                        "."
+                        '.'
                 );
             }
             expressGenerator.useMiddleware(this, midd.default);
@@ -542,18 +556,18 @@ export default class App {
     private loadControllers(path: string) {
         const files = fs.readdirSync(path);
         for (let index in files) {
-            let currentFilePath = path + "/" + files[index];
+            let currentFilePath = path + '/' + files[index];
             if (fs.lstatSync(currentFilePath).isDirectory()) {
                 this.loadControllers(currentFilePath);
                 continue;
             }
-            if (files[index].endsWith("ts")) continue;
+            if (files[index].endsWith('ts')) continue;
             const ctrl = require(currentFilePath);
             if (!ctrl.default) {
                 throw new Error(
-                    "Please define the controller as the export default class in file " +
+                    'Please define the controller as the export default class in file ' +
                         currentFilePath +
-                        "."
+                        '.'
                 );
             }
             expressGenerator.useController(this, ctrl.default, routes);
@@ -570,7 +584,7 @@ export default class App {
                     }
                     r.performResponse(req, res);
                 })
-                .catch(err => {
+                .catch((err) => {
                     if (!res.headersSent) {
                         res.status(404);
                     }
@@ -586,7 +600,7 @@ export default class App {
                     }
                     r.performResponse(req, res);
                 })
-                .catch(err => {
+                .catch((err) => {
                     if (!res.headersSent) {
                         res.status(500);
                     }
@@ -618,7 +632,7 @@ export default class App {
 
     public generateTokenForUser(user: User): string {
         return sign({ id: user.id }, this._config.tokenSecret, {
-            expiresIn: "1y"
+            expiresIn: '1y',
         });
     }
 }
@@ -631,10 +645,10 @@ declare global {
     }
 }
 
-Object.defineProperty(Array.prototype, "serialize", {
+Object.defineProperty(Array.prototype, 'serialize', {
     enumerable: false,
     configurable: true,
-    value: function() {
+    value: function () {
         let r = [];
         for (let el of this) {
             if (el.serialize) {
@@ -644,29 +658,29 @@ Object.defineProperty(Array.prototype, "serialize", {
             }
         }
         return r;
-    }
+    },
 });
 
-Object.defineProperty(Array.prototype, "addHiddenField", {
+Object.defineProperty(Array.prototype, 'addHiddenField', {
     enumerable: false,
     configurable: true,
-    value: function(field: string) {
+    value: function (field: string) {
         for (let el of this) {
             if (el.addHiddenField) {
                 el.addHiddenField(field);
             }
         }
-    }
+    },
 });
 
-Object.defineProperty(Array.prototype, "removeHiddenField", {
+Object.defineProperty(Array.prototype, 'removeHiddenField', {
     enumerable: false,
     configurable: true,
-    value: function(field: string) {
+    value: function (field: string) {
         for (let el of this) {
             if (el.removeHiddenField) {
                 el.removeHiddenField(field);
             }
         }
-    }
+    },
 });

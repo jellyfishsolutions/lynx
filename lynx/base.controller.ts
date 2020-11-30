@@ -1,68 +1,19 @@
-import * as express from "express";
-import App from "./app";
-import { app } from "./app";
-import { FileOptions } from "./file.response";
-import RenderResponse from "./render.response";
-import RedirectResponse from "./redirect.response";
-import SkipResponse from "./skip.response";
-import UnauthorizedResponse from "./unauthorized.response";
-import FileResponse from "./file.response";
-import Request from "./request";
-import { LynxControllerMetadata } from "./decorators";
-import Media from "./entities/media.entity";
-import StatusError from "./status-error";
+import * as express from 'express';
+import App from './app';
+import { FileOptions } from './file.response';
+import RenderResponse from './render.response';
+import RedirectResponse from './redirect.response';
+import SkipResponse from './skip.response';
+import UnauthorizedResponse from './unauthorized.response';
+import FileResponse from './file.response';
+import Request from './request';
+import { LynxControllerMetadata } from './decorators';
+import Media from './entities/media.entity';
+import StatusError from './status-error';
 
-import {
-    createTestAccount,
-    createTransport,
-    getTestMessageUrl,
-    Transporter
-} from "nodemailer";
-
-import { logger } from "./logger";
-import Logger from "./logger";
-import XmlResponse from "./xml.response";
-
-let mailClient: Transporter;
-let guard = false;
-function syncronizedInit() {
-    if (guard) return;
-    guard = true;
-    if (!mailClient) {
-        if (!app.config.mailer.host) {
-            try {
-                createTestAccount((err, account) => {
-                    if (err) {
-                        logger.error(err);
-                        guard = false;
-                        return;
-                    }
-                    mailClient = createTransport({
-                        host: "smtp.ethereal.email",
-                        port: 587,
-                        secure: false, // true for 465, false for other ports
-                        auth: {
-                            user: account.user, // generated ethereal user
-                            pass: account.pass // generated ethereal password
-                        }
-                    });
-                    guard = false;
-                });
-            } catch (e) {
-                guard = false;
-                logger.error(e);
-            }
-        } else {
-            try {
-                mailClient = createTransport(app.config.mailer);
-                guard = false;
-            } catch (e) {
-                guard = false;
-                logger.error(e);
-            }
-        }
-    }
-}
+import { logger } from './logger';
+import Logger from './logger';
+import XmlResponse from './xml.response';
 
 export enum FlashType {
     primary,
@@ -72,27 +23,27 @@ export enum FlashType {
     warning,
     info,
     light,
-    dark
+    dark,
 }
 
 function mapFlashTypeToString(type: FlashType): string {
     switch (type) {
         case FlashType.primary:
-            return "primary";
+            return 'primary';
         case FlashType.secondary:
-            return "secondary";
+            return 'secondary';
         case FlashType.success:
-            return "success";
+            return 'success';
         case FlashType.danger:
-            return "danger";
+            return 'danger';
         case FlashType.warning:
-            return "warning";
+            return 'warning';
         case FlashType.info:
-            return "info";
+            return 'info';
         case FlashType.light:
-            return "light";
+            return 'light';
         case FlashType.dark:
-            return "dark";
+            return 'dark';
     }
 }
 
@@ -116,7 +67,6 @@ export class BaseController {
 
     constructor(app: App) {
         this.app = app;
-        syncronizedInit();
     }
 
     /**
@@ -174,8 +124,8 @@ export class BaseController {
      * @param context a plain object containing any necessary data needed by the view
      */
     public render(view: string, req: Request, context?: any): RenderResponse {
-        if (!view.endsWith(".njk")) {
-            view = view + ".njk";
+        if (!view.endsWith('.njk')) {
+            view = view + '.njk';
         }
         if (!context) {
             context = {};
@@ -210,7 +160,7 @@ export class BaseController {
         }
         session.sessionFlash.push({
             type: mapFlashTypeToString(msg.type),
-            message: this.tr(msg.message, req)
+            message: this.tr(msg.message, req),
         });
     }
 
@@ -242,7 +192,7 @@ export class BaseController {
         let f: FileResponse;
         if (path instanceof Media) {
             if (path.isDirectory) {
-                throw new Error("unable to download a directory");
+                throw new Error('unable to download a directory');
             }
             f = new FileResponse(path.fileName);
             f.contentType = path.mimetype;
@@ -283,8 +233,8 @@ export class BaseController {
      * @param context a plain object containing any necessary data needed by the view
      */
     public xml(view: string, req: Request, context?: any): XmlResponse {
-        if (!view.endsWith(".njk")) {
-            view = view + ".njk";
+        if (!view.endsWith('.njk')) {
+            view = view + '.njk';
         }
         if (!context) {
             context = {};
@@ -309,25 +259,9 @@ export class BaseController {
         dest: string | string[],
         subject: string,
         text: string,
-        html: string,
+        html: string
     ) {
-        let mailOptions = {
-            from: this.app.config.mailer.sender, // sender address
-            to: dest,
-            subject: subject, // Subject line
-            text: text, // plain text body
-            html: html // html body
-        };
-        try {
-            let result = await mailClient.sendMail(mailOptions);
-            if (result) {
-                logger.debug("Preview URL: %s", getTestMessageUrl(result));
-            }
-            return true;
-        } catch (e) {
-            logger.error(e);
-        }
-        return false;
+        return this.app.mailClient.sendRawMail(dest, subject, text, html);
     }
 
     /**
@@ -351,26 +285,14 @@ export class BaseController {
         htmlTemplate: string,
         context: any
     ): Promise<boolean> {
-        if (!context) {
-            context = {};
-        }
-        context.req = req;
-
-        let subject = this.app.nunjucksEnvironment.renderString(
+        return this.sendMail(
+            req,
+            dest,
             subjectTemplateString,
+            textTemplate,
+            htmlTemplate,
             context
         );
-
-        if (!textTemplate.endsWith(".njk")) {
-            textTemplate += ".njk";
-        }
-        if (!htmlTemplate.endsWith(".njk")) {
-            htmlTemplate += ".njk";
-        }
-        let text = this.app.nunjucksEnvironment.render(textTemplate, context);
-        let html = this.app.nunjucksEnvironment.render(htmlTemplate, context);
-
-        return this.sendRawMail(dest, subject, text, html);
     }
 
     /**
@@ -395,18 +317,25 @@ export class BaseController {
     }
 
     private format(fmt: string, ...args: any) {
-        if (!fmt.match(/^(?:(?:(?:[^{}]|(?:\{\{)|(?:\}\}))+)|(?:\{[0-9]+\}))+$/)) {
+        if (
+            !fmt.match(/^(?:(?:(?:[^{}]|(?:\{\{)|(?:\}\}))+)|(?:\{[0-9]+\}))+$/)
+        ) {
             throw new Error('invalid format string.');
         }
-        return fmt.replace(/((?:[^{}]|(?:\{\{)|(?:\}\}))+)|(?:\{([0-9]+)\})/g, (_, str, index) => {
-            if (str) {
-                return str.replace(/(?:{{)|(?:}})/g, (m:string[]) => m[0]);
-            } else {
-                if (index >= args.length) {
-                    throw new Error('argument index is out of range in format');
+        return fmt.replace(
+            /((?:[^{}]|(?:\{\{)|(?:\}\}))+)|(?:\{([0-9]+)\})/g,
+            (_, str, index) => {
+                if (str) {
+                    return str.replace(/(?:{{)|(?:}})/g, (m: string[]) => m[0]);
+                } else {
+                    if (index >= args.length) {
+                        throw new Error(
+                            'argument index is out of range in format'
+                        );
+                    }
+                    return args[index];
                 }
-                return args[index];
             }
-        });
+        );
     }
 }

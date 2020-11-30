@@ -1,6 +1,7 @@
-import { setSkipSync } from "./entities/user.entity";
-import UFS from "./ufs";
-import { LocalUFS } from "./ufs";
+import { setSkipSync } from './entities/user.entity';
+import { MailClient, NodemailerClient } from './mail-client';
+import UFS from './ufs';
+import { LocalUFS } from './ufs';
 
 export default interface Config {
     disabledDb: boolean;
@@ -34,8 +35,9 @@ export default interface Config {
         auth: {
             user: string;
             pass: string;
-        }
+        };
     };
+    mailFactoryConstructor: () => MailClient;
     defaultLanguage: string;
     uploadPath: string;
     cachePath: string;
@@ -53,26 +55,26 @@ export class ConfigBuilder {
             disabledDb: false,
             disabledGraphQL: false,
             db: {
-                type: "mysql",
-                host: "localhost",
+                type: 'mysql',
+                host: 'localhost',
                 port: 8889,
-                username: "root",
-                password: "root",
-                database: "koa_typescript2",
-                entities: [basePath + "/entities/*.entity.js"],
+                username: 'root',
+                password: 'root',
+                database: 'koa_typescript2',
+                entities: [basePath + '/entities/*.entity.js'],
                 synchronize: true,
-                logging: false
+                logging: false,
             },
-            publicFolders: [basePath + "/public"],
-            viewFolders: [basePath + "/views"],
-            translationFolders: [basePath + "/locale"],
-            middlewaresFolders: [basePath + "/middlewares"],
-            controllersFolders: [basePath + "/controllers"],
-            migrationsFolders: [basePath + "/migrations"],
+            publicFolders: [basePath + '/public'],
+            viewFolders: [basePath + '/views'],
+            translationFolders: [basePath + '/locale'],
+            middlewaresFolders: [basePath + '/middlewares'],
+            controllersFolders: [basePath + '/controllers'],
+            migrationsFolders: [basePath + '/migrations'],
             disableMigrations: false,
-            sessionSecret: "session_secret",
+            sessionSecret: 'session_secret',
             sessionStore: null,
-            tokenSecret: "token_secret",
+            tokenSecret: 'token_secret',
             mailer: {
                 sender: 'Lynx Framework <lynx.framework@fakemail.com>',
                 host: '',
@@ -80,15 +82,16 @@ export class ConfigBuilder {
                 secure: false,
                 auth: {
                     user: '',
-                    pass: ''
-                }
+                    pass: '',
+                },
             },
-            defaultLanguage: "it",
-            uploadPath: basePath + "/../uploads",
-            cachePath: basePath + "/../cache",
+            mailFactoryConstructor: () => new NodemailerClient(),
+            defaultLanguage: 'it',
+            uploadPath: basePath + '/../uploads',
+            cachePath: basePath + '/../cache',
             ufs: new LocalUFS(),
             onDatabaseInit: () => {},
-            chachingImages: false
+            chachingImages: false,
         };
     }
 
@@ -219,10 +222,23 @@ export class ConfigBuilder {
         return this;
     }
 
-    public setMailerServer(host: string, port: number, secure: boolean): ConfigBuilder {
+    public setMailerServer(
+        host: string,
+        port: number,
+        secure: boolean
+    ): ConfigBuilder {
         this.config.mailer.host = host;
         this.config.mailer.port = port;
         this.config.mailer.secure = secure;
+        return this;
+    }
+
+    /**
+     * Set a different method to istantiace a mailer client.
+     * @param fn a function that istantiate a `MailClient` object
+     */
+    public setMailClientFactoryConstructor(fn: () => MailClient) {
+        this.config.mailFactoryConstructor = fn;
         return this;
     }
 
