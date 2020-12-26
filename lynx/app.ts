@@ -101,7 +101,7 @@ function translate(str: string): string {
 
 function performTranslation(str: string, translations: any): string {
     let translation = translations[str];
-    if (translation) {
+    if (translation !== null && translation !== undefined) {
         return translation;
     }
     const start = str.indexOf('{{');

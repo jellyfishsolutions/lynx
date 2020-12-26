@@ -1,6 +1,6 @@
-import * as Joi from "@hapi/joi";
+import * as Joi from 'joi';
 
-import * as itErrors from "./locale/joi_it";
+import * as itErrors from './locale/joi_it';
 
 /**
  * SchemaBuilder for the Joi validator.
@@ -42,7 +42,7 @@ export class SchemaBuilder {
         if (min !== undefined) {
             tmp = tmp.min(min);
         } else {
-            tmp = tmp.allow("");
+            tmp = tmp.allow('');
         }
         if (max !== undefined) {
             tmp = tmp.max(max);
@@ -72,9 +72,7 @@ export class SchemaBuilder {
      * @return the schema builder
      */
     email(key: string): SchemaBuilder {
-        this.keys[key] = Joi.string()
-            .email()
-            .required();
+        this.keys[key] = Joi.string().email().required();
         this.lastKey = key;
         return this;
     }
@@ -222,7 +220,6 @@ export class SchemaBuilder {
         return this;
     }
 
-
     /**
      * Add the label to the last added key
      * @param label the label to use in case of error
@@ -264,12 +261,12 @@ export class ValidateObject<T> {
         this.schema = schema;
         let options = null;
         for (let locale of locales) {
-            if (locale.indexOf("en") != -1) {
+            if (locale.indexOf('en') != -1) {
                 break;
             }
-            if (locale == "it") {
+            if (locale == 'it') {
                 options = {
-                    language: itErrors.errors
+                    language: itErrors.errors,
                 };
                 break;
             }
@@ -309,8 +306,8 @@ export class ValidateObject<T> {
         if (this.valid.error) {
             for (let err of this.valid.error!!.details) {
                 errors.push({
-                    name: err.context && err.context.key ? err.context.key : "",
-                    message: err.message
+                    name: err.context && err.context.key ? err.context.key : '',
+                    message: err.message,
                 });
             }
         }
