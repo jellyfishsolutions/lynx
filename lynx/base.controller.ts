@@ -285,7 +285,7 @@ export class BaseController {
         htmlTemplate: string,
         context: any
     ): Promise<boolean> {
-        return this.sendMail(
+        return this.app.mailClient.sendMail(
             req,
             dest,
             subjectTemplateString,
