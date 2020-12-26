@@ -1,22 +1,22 @@
-import { Request as ERequest, Response as EResponse } from "express";
-import AsyncResponse from "./async.response";
-import * as Jimp from "jimp";
-import * as fs from "fs";
-import { app } from "./app";
+import { Request as ERequest, Response as EResponse } from 'express';
+import AsyncResponse from './async.response';
+import * as Jimp from 'jimp';
+import * as fs from 'fs';
+import { app } from './app';
 
 function fileExsist(path: string): Promise<boolean> {
     return new Promise<boolean>((res, _) => {
-        fs.exists(path, val => {
+        fs.exists(path, (val) => {
             res(val);
         });
     });
 }
 
 function saveToCache(path: string, s: Jimp) {
-    if (!app.config.chachingImages) {
+    if (!app.config.cachingImages) {
         return;
     }
-    s.writeAsync(path).catch(err => console.error(err));
+    s.writeAsync(path).catch((err) => console.error(err));
 }
 
 /**
@@ -87,7 +87,7 @@ export default class FileResponse extends AsyncResponse {
             return this.download(res, path);
         }
 
-        let cachePath = path + "_" + JSON.stringify(this._options);
+        let cachePath = path + '_' + JSON.stringify(this._options);
         if (await fileExsist(cachePath)) {
             return this.download(res, cachePath);
         }
@@ -103,10 +103,11 @@ export default class FileResponse extends AsyncResponse {
             hasProcessing = true;
             img = await Jimp.read(path);
             img = img.resize(this._options.width, this._options.height);
-
         }
         if (hasProcessing) {
-            let buff = await (img as Jimp).getBufferAsync(this._contentType as string);
+            let buff = await (img as Jimp).getBufferAsync(
+                this._contentType as string
+            );
             res.send(buff);
             res.end();
             saveToCache(cachePath, img);

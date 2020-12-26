@@ -1,8 +1,8 @@
-import * as express from "express";
-import App from "./app";
-import StatusError from "./status-error";
+import * as express from 'express';
+import App from './app';
+import StatusError from './status-error';
 
-export const BLOCK_CHAIN = "__block_chain";
+export const BLOCK_CHAIN = '__block_chain';
 
 /**
  * This class defines the base middleware class. Any middleware should be extends
@@ -36,8 +36,5 @@ export abstract class BaseMiddleware {
      * @param res the standard express Response object
      * @return to block the middlewares-controller chain, please return `BLOCK_CHAIN`
      */
-    abstract async apply(
-        req: express.Request,
-        res: express.Response
-    ): Promise<any>;
+    abstract apply(req: express.Request, res: express.Response): Promise<any>;
 }

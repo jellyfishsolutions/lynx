@@ -1,28 +1,32 @@
-import BaseModule from "./base.module";
+import BaseModule from './base.module';
 
 export default class SimpleModule extends BaseModule {
     get controllers(): string {
-        return "";
+        return '';
     }
     get middlewares(): string {
-        return "";
+        return '';
     }
     get translation(): string {
-        return "";
+        return '';
     }
     get views(): string {
-        return "";
+        return '';
     }
 
     get public(): string {
-        return "";
+        return '';
     }
 
     get entities(): string {
-        return "";
+        return '';
     }
 
     get migrations(): string {
-        return "";
+        return '';
+    }
+
+    get templating(): string {
+        return '';
     }
 }

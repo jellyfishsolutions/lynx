@@ -1,4 +1,4 @@
-import Config from "./config";
+import Config from './config';
 
 export default abstract class BaseModule {
     abstract get controllers(): string;
@@ -8,6 +8,7 @@ export default abstract class BaseModule {
     abstract get public(): string;
     abstract get entities(): string;
     abstract get migrations(): string;
+    abstract get templating(): string;
 
     public mount(config: Config) {
         if (this.controllers) {
@@ -26,10 +27,13 @@ export default abstract class BaseModule {
             config.publicFolders.unshift(this.public);
         }
         if (this.entities) {
-            config.db.entities.unshift(this.entities + "/*.entity.js");
+            config.db.entities.unshift(this.entities + '/*.entity.js');
         }
         if (this.migrations) {
             config.migrationsFolders.unshift(this.migrations);
+        }
+        if (this.templating) {
+            config.templatingFolders.unshift(this.templating);
         }
     }
 

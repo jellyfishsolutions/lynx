@@ -11,7 +11,6 @@ import * as multer from 'multer';
 import * as cors from 'cors';
 import * as moment from 'moment';
 const flash = require('express-flash');
-import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import Config from './config';
 import BaseModule from './base.module';
 import Migration from './migration';
@@ -19,7 +18,6 @@ import MigrationEntity from './entities/migration.entity';
 import ErrorController from './error.controller';
 
 import * as expressGenerator from './express-generator';
-import * as graphqlGenerator from './graphql/generator';
 
 import { setup } from './entities/setup';
 import User from './entities/user.entity';
@@ -34,6 +32,7 @@ import {
     DefaultAPIResponseWrapper,
 } from './api-response-wrapper';
 import { MailClient } from './mail-client';
+import { initializeTemplating } from './templating/decorators';
 
 /**
  * Utility function to check if we are in the production environment.
@@ -391,27 +390,16 @@ export default class App {
         this._nunjucksEnvironment.addGlobal('resolvePath', resolvePath);
         this._nunjucksEnvironment.addGlobal('currentHost', currentHost);
 
+        for (let path of config.templatingFolders) {
+            this.loadTemplating(path);
+        }
+        initializeTemplating(this);
+
         for (let path of config.middlewaresFolders) {
             this.loadMiddlewares(path);
         }
         for (let path of config.controllersFolders) {
             this.loadControllers(path);
-        }
-
-        if (!config.disabledDb && !config.disabledGraphQL) {
-            const schema = graphqlGenerator.generateSchema(config.db.entities);
-            // The GraphQL endpoint
-            this.express.use(
-                '/graphql',
-                bodyParser.json(),
-                graphqlExpress({ schema })
-            );
-
-            // GraphiQL, a visual editor for queries
-            this.express.use(
-                '/graphiql',
-                graphiqlExpress({ endpointURL: '/graphql' })
-            );
         }
 
         this._errorController = new ErrorController(this);
@@ -571,6 +559,22 @@ export default class App {
                 );
             }
             expressGenerator.useController(this, ctrl.default, routes);
+        }
+    }
+
+    private loadTemplating(path: string) {
+        if (!fs.existsSync(path)) {
+            return;
+        }
+        const files = fs.readdirSync(path);
+        for (let index in files) {
+            let currentFilePath = path + '/' + files[index];
+            if (fs.lstatSync(currentFilePath).isDirectory()) {
+                this.loadTemplating(currentFilePath);
+                continue;
+            }
+            if (files[index].endsWith('ts')) continue;
+            require(currentFilePath);
         }
     }
 

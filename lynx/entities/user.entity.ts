@@ -4,12 +4,11 @@ import {
     Column,
     ManyToMany,
     OneToMany,
-    JoinTable
-} from "typeorm";
-import BaseEntity from "./base.entity";
-import Role from "./role.entity";
-import Media from "./media.entity";
-import { GraphQL, GraphField } from "../graphql/decorators";
+    JoinTable,
+} from 'typeorm';
+import BaseEntity from './base.entity';
+import Role from './role.entity';
+import Media from './media.entity';
 
 let SYNCHRONIZE = true;
 
@@ -17,40 +16,33 @@ export function setSkipSync(skip: boolean) {
     SYNCHRONIZE = !skip;
 }
 
-@Entity("users", { synchronize: SYNCHRONIZE })
-@GraphQL()
+@Entity('users', { synchronize: SYNCHRONIZE })
 export default class User extends BaseEntity {
     @PrimaryGeneratedColumn()
-    @GraphField({ type: "ID" })
     id: number;
 
     @Column({ unique: true })
-    @GraphField()
     email: string;
 
     @Column() password: string;
 
     @Column()
-    @GraphField()
     firstName: string;
 
     @Column()
-    @GraphField()
     lastName: string;
 
     @Column()
-    @GraphField()
     nickName: string;
 
-    @ManyToMany(_ => Role, role => role.users, { eager: true })
+    @ManyToMany((_) => Role, (role) => role.users, { eager: true })
     @JoinTable()
-    @GraphField({ type: "[Role]" })
     roles: Role[];
 
-    @OneToMany(_ => Media, media => media.owner)
+    @OneToMany((_) => Media, (media) => media.owner)
     media: Media[];
 
-    hiddenFields = ["password"];
+    hiddenFields = ['password'];
 
     private hasRole(name: string): boolean {
         for (let role of this.roles) {
@@ -71,7 +63,7 @@ export default class User extends BaseEntity {
 
     get level(): number {
         let max = 0;
-        this.roles.forEach(r => {
+        this.roles.forEach((r) => {
             if (r.level > max) {
                 max = r.level;
             }

@@ -1,5 +1,5 @@
-import { Request as ERequest, Response as EResponse } from "express";
-import Response from "./response";
+import { Request as ERequest, Response as EResponse } from 'express';
+import Response from './response';
 
 /**
  *
@@ -12,12 +12,12 @@ export default abstract class AsyncResponse extends Response {
      * @param req the standard Express request
      * @param res the standard Express response
      */
-    abstract async asyncResponse(req: ERequest, res: EResponse): Promise<void>;
+    abstract asyncResponse(req: ERequest, res: EResponse): Promise<void>;
 
     performResponse(req: ERequest, res: EResponse) {
         this.asyncResponse(req, res)
             .then(() => {})
-            .catch(err => {
+            .catch((err) => {
                 throw err;
             });
     }

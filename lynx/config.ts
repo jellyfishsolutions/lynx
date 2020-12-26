@@ -23,6 +23,7 @@ export default interface Config {
     middlewaresFolders: string[];
     controllersFolders: string[];
     migrationsFolders: string[];
+    templatingFolders: string[];
     disableMigrations: boolean;
     sessionSecret: string;
     sessionStore?: any;
@@ -44,7 +45,7 @@ export default interface Config {
     jsonLimit?: string;
     ufs: UFS;
     onDatabaseInit: () => void;
-    chachingImages: boolean;
+    cachingImages: boolean;
 }
 
 export class ConfigBuilder {
@@ -71,6 +72,7 @@ export class ConfigBuilder {
             middlewaresFolders: [basePath + '/middlewares'],
             controllersFolders: [basePath + '/controllers'],
             migrationsFolders: [basePath + '/migrations'],
+            templatingFolders: [basePath + '/templating'],
             disableMigrations: false,
             sessionSecret: 'session_secret',
             sessionStore: null,
@@ -91,7 +93,7 @@ export class ConfigBuilder {
             cachePath: basePath + '/../cache',
             ufs: new LocalUFS(),
             onDatabaseInit: () => {},
-            chachingImages: false,
+            cachingImages: false,
         };
     }
 
@@ -263,7 +265,7 @@ export class ConfigBuilder {
     }
 
     public enableCachingImages(): ConfigBuilder {
-        this.config.chachingImages = true;
+        this.config.cachingImages = true;
         return this;
     }
 
