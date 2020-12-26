@@ -281,6 +281,15 @@ export default class App {
         this._config = config;
         app = this;
 
+        if (!config.onlyModules) {
+            logger.warn(
+                'LEGACY MODE: loading both modules and a current application context is now deprecated.'
+            );
+            logger.warn(
+                'LEGACY MODE: please reorganize your project folder in order to have ONLY modules, also for your current application context!'
+            );
+        }
+
         if (modules) {
             this._modules = new Set(modules);
             this._modules.forEach((module) => module.mount(this._config));

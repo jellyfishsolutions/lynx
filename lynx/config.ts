@@ -46,12 +46,18 @@ export default interface Config {
     ufs: UFS;
     onDatabaseInit: () => void;
     cachingImages: boolean;
+    onlyModules: boolean;
 }
 
 export class ConfigBuilder {
     private config: Config;
 
-    public constructor(basePath: string) {
+    /**
+     * Create a new configuration builder
+     * @param basePath the current base path of the application
+     * @param legacyMode enable or disable the legacy mode (default: true)
+     */
+    public constructor(basePath: string, legacyMode: boolean = true) {
         this.config = {
             disabledDb: false,
             disabledGraphQL: false,
@@ -94,7 +100,18 @@ export class ConfigBuilder {
             ufs: new LocalUFS(),
             onDatabaseInit: () => {},
             cachingImages: false,
+            onlyModules: !legacyMode,
         };
+        if (!legacyMode) {
+            this.config.db.entities = [];
+            this.config.publicFolders = [];
+            this.config.viewFolders = [];
+            this.config.translationFolders = [];
+            this.config.middlewaresFolders = [];
+            this.config.controllersFolders = [];
+            this.config.migrationsFolders = [];
+            this.config.templatingFolders = [];
+        }
     }
 
     public setPublicFolders(folders: string[]): ConfigBuilder {
@@ -266,6 +283,11 @@ export class ConfigBuilder {
 
     public enableCachingImages(): ConfigBuilder {
         this.config.cachingImages = true;
+        return this;
+    }
+
+    public enableOnlyModulesMode(): ConfigBuilder {
+        this.config.onlyModules = true;
         return this;
     }
 

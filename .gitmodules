@@ -1,0 +1,3 @@
+[submodule "lynx.wiki"]
+	path = lynx.wiki
+	url = https://github.com/jellyfishsolutions/lynx.wiki.git

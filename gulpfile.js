@@ -3,6 +3,7 @@ var fs = require("fs");
 var del = require("del");
 var ts = require("gulp-typescript");
 var merge = require("merge2");
+const jsdoc = require('gulp-jsdoc3');
 
 var config = JSON.parse(fs.readFileSync(__dirname + "/tsconfig.json"));
 
@@ -37,6 +38,14 @@ gulp.task("compile", function() {
         tsResult.js.pipe(gulp.dest(config.compilerOptions.outDir)),
         tsResult.dts.pipe(gulp.dest(config.compilerOptions.outDir))
     ]);
+});
+
+gulp.task('doc', function (cb) {
+    const config = require(__dirname + '/jsdoc.json');
+    config.opts.destination = __dirname + config.opts.destination;
+    console.log(__dirname + '/lynx/**/*.ts');
+    gulp.src([__dirname + '/README.md',  __dirname + '/lynx/**/*.ts'], { read: false })
+        .pipe(jsdoc(config, cb));
 });
 
 gulp.task("build", gulp.series("clean", gulp.parallel("copy", "compile")));

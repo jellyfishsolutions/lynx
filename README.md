@@ -13,7 +13,6 @@ Lynx is founded by state-of-the-art libraries. It uses:
 -   **[ExpressJS](http://expressjs.com/)** for the management of routes;
 -   **[nunjucks](https://mozilla.github.io/nunjucks/)** as template engine;
 -   **[TypeORM](http://typeorm.io/)** as ORM to the database;
--   **[GraphQL](http://graphql.org/)** to automatically exposes an API to the database entities;
 -   **[JWT](https://jwt.io/)** to enable token authentication;
 -   **[multer](https://github.com/expressjs/multer)** to manage file upload;
 -   **[nodemailer](https://nodemailer.com)** to send emails;
@@ -27,8 +26,7 @@ With Lynx, you will have the following functionality out of the box:
 -   user management, and low level function for login, registration, authorization and authentication;
 -   media upload management, file upload and retrieving, on a virtual-folder environment;
 -   multi-language is a first class citizen! You can use new nunjucks filter to enable multi-language on the template engine, but also during fields validation!
--   GraphQL (queries and mutations!) automatically generated based on your Database entities and decoration.
--   datatables, directly integrated on the template engine, with pagination, filtering and ordering.
+-   datatables, directly integrated on the template engine, with pagination, filtering and ordering (please use the `lynx-datatable` module)
 
 ## Installation
 
@@ -36,9 +34,9 @@ With Lynx, you will have the following functionality out of the box:
 npm install lynx-framework
 ```
 
-## Lynx application structure
+## Lynx module structure
 
-A Lynx application shall be formed by different folders:
+A Lynx module shall be formed by different folders:
 
 ```
 .
@@ -55,6 +53,7 @@ A Lynx application shall be formed by different folders:
 ├── middlewares
 │   └── always.middleware.ts
 ├── public
+├── templating
 └── views
     └── main.njk
 ```
@@ -65,25 +64,31 @@ A Lynx application shall be formed by different folders:
 -   The `local` folder shall contains localization file formatted as key-value JSON file.
 -   The `middlewares` folder shall contain (with subfolder support) any middleware.
 -   The `public` folder shall contain all the public resources, such as images, css and so on.
+-   The `templating` folder shall contain filters and functions to enchant the templating system.
 -   The `view` folder shall contain the nunjucks templates. An `emails` subfolder, containing the email templates, is recommended.
 
-The project structure can be customized.
+The `index.ts` should be the entry point of the module, defining a class that implements the `BaseModule` abstract class. For semplicity, also a `SimpleModule` class can be used, in order to define only the folders needed by the module.
+
+The project structure can be customized with different folder names, simply editing the module class. Otherwise, this structure is strictly recommended.
 
 ## Lynx application
+
+A Lynx application is composed by at least one module, and an entry point of the standard node application.
 
 To start a Lynx application, it is necessary to instantiate a Lynx `App` object. For example, the `index.ts` file can be:
 
 ```
 import { App, ConfigBuilder } from "lynx-framework/app";
+import AppModule from "./modules/app";
 
 const port = Number(process.env.PORT) || 3000;
 
-const app = new App(new ConfigBuilder(__dirname).build());
+const app = new App(new ConfigBuilder(__dirname, false).build(), [new AppModule()]);
 app.startServer(port);
 ```
 
 Any Lynx configuration, such as database connection, token secrets, folders and so on, can be customized using the `ConfigBuilder` object.
-Any controllers, middlewares and entities will be automatically loaded by the Lynx app.
+Any controllers, middlewares and entities of any modules will be automatically loaded by the Lynx app.
 
 ## Controllers
 
@@ -382,6 +387,63 @@ Usage:
 The `currentHost` function is used to retrieve the current server host. This can be used, with the `route` function, to generate an absolute
 url (for example, needed to generate an url for an email).
 
+### Add custom filters and functions to the template engine.
+
+It is possible to add new custom filters and functions using the `TemplateFilter` and `TemplateFunction` decorators.
+In both cases, it is necessary to create a new class for each filter or function, inside the `templating` folder of the module.
+
+NOTE: filters and functions do not need to be defined as `export default class`es as for controllers or entities. Moreover, only once instance for each class will be created (they are managed as "singleton" by Lynx).
+
+#### Custom filter
+
+Example: create a new `currency` filter.
+Create a new `currency.filter.ts` file inside the `templating` folder as follows:
+
+```
+import { TemplateFilter } from 'lynx-framework/templating/decorators';
+import BaseFilter from 'lynx-framework/templating/base.filter';
+
+@TemplateFilter('currency')
+export class CurrencyFiltering extends BaseFilter {
+    filter(val: any, ...args: any[]): string {
+        if (val == undefined) {
+            return val;
+        }
+        //TODO: convert the `val` variable and return the result
+        return val + '€';
+    }
+}
+
+```
+
+### Custom function
+
+Example: create a new `placeholderUrl` function.
+Create a new `placeholder-url.function.ts` file inside the `templating` folder as follows:
+
+```
+import { TemplateFunction } from 'lynx-framework/templating/decorators';
+import BaseFunction from 'lynx-framework/templating/base.function';
+
+@TemplateFunction('placeholderUrl')
+export default class PlaceholderUrlFunction extends BaseFunction {
+    execute(...args: any[]) {
+        let ratio = this.safeGet(args, 0);
+        let text = 'Free';
+        if (!ratio) {
+            ratio = '4:3';
+        } else {
+            text = ratio;
+        }
+        let _ww = (ratio + '').split(':')[0];
+        let _hh = (ratio + '').split(':')[1];
+        let h = ((350 / Number(_ww)) * Number(_hh)).toFixed(0);
+        return 'http://via.placeholder.com/350x' + h + '?text=' + text;
+    }
+}
+
+```
+
 ## Custom `API` response
 
 Starting from `1.0.0-rc4`, it is possible to customize the standard response of the `API` tagged routes.
@@ -391,7 +453,7 @@ By default, the `DefaultResponseWrapper` implementation is used.
 
 ## Lynx Modules
 
-Lynx supports custom module to add functionality at the current application. A module act exactly as a standard Lynx application, with its standatd `controllers`, `middlewares`, `entities`, `views`, `locale` and `public` folders.
+Lynx supports custom module to add functionality at the current application. A module act exactly as a legacy Lynx application, with its standard `controllers`, `middlewares`, `entities`, `views`, `locale` and `public` folders.
 Modules shall be loaded at startup time, and shall be injected in the Lynx application constructor:
 
 ```
@@ -400,7 +462,7 @@ const app = new App(myConfig, [new DatagridModule(), new AdminUIModule()] as Bas
 
 In this example, the Lynx application is created with the `DatagridModule` and the `AdminUIModule` modules.
 
-Modules are the standard to provide additional functionaly to the Lynx framework.
+Modules are the standard to provide additional functionality to the Lynx framework.
 
 ## Mail Client
 
