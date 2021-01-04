@@ -286,11 +286,6 @@ export class ConfigBuilder {
         return this;
     }
 
-    public enableOnlyModulesMode(): ConfigBuilder {
-        this.config.onlyModules = true;
-        return this;
-    }
-
     public build(): Config {
         return this.config;
     }

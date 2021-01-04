@@ -12,28 +12,60 @@ export default abstract class BaseModule {
 
     public mount(config: Config) {
         if (this.controllers) {
-            config.controllersFolders.unshift(this.controllers);
+            if (config.onlyModules) {
+                config.controllersFolders.push(this.controllers);
+            } else {
+                config.controllersFolders.unshift(this.controllers);
+            }
         }
         if (this.middlewares) {
-            config.middlewaresFolders.unshift(this.middlewares);
+            if (config.onlyModules) {
+                config.middlewaresFolders.push(this.middlewares);
+            } else {
+                config.middlewaresFolders.unshift(this.middlewares);
+            }
         }
         if (this.translation) {
-            config.translationFolders.unshift(this.translation);
+            if (config.onlyModules) {
+                config.translationFolders.push(this.translation);
+            } else {
+                config.translationFolders.unshift(this.translation);
+            }
         }
         if (this.views) {
-            config.viewFolders.unshift(this.views);
+            if (config.onlyModules) {
+                config.viewFolders.push(this.views);
+            } else {
+                config.viewFolders.unshift(this.views);
+            }
         }
         if (this.public) {
-            config.publicFolders.unshift(this.public);
+            if (config.onlyModules) {
+                config.publicFolders.push(this.public);
+            } else {
+                config.publicFolders.unshift(this.public);
+            }
         }
         if (this.entities) {
-            config.db.entities.unshift(this.entities + '/*.entity.js');
+            if (config.onlyModules) {
+                config.db.entities.push(this.entities + '/*.entity.js');
+            } else {
+                config.db.entities.unshift(this.entities + '/*.entity.js');
+            }
         }
         if (this.migrations) {
-            config.migrationsFolders.unshift(this.migrations);
+            if (config.onlyModules) {
+                config.migrationsFolders.push(this.migrations);
+            } else {
+                config.migrationsFolders.unshift(this.migrations);
+            }
         }
         if (this.templating) {
-            config.templatingFolders.unshift(this.templating);
+            if (config.onlyModules) {
+                config.templatingFolders.push(this.templating);
+            } else {
+                config.templatingFolders.unshift(this.templating);
+            }
         }
     }
 
