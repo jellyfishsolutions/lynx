@@ -4,6 +4,8 @@ var del = require("del");
 var ts = require("gulp-typescript");
 var merge = require("merge2");
 const jsdoc = require('gulp-jsdoc3');
+var sourcemaps = require('gulp-sourcemaps');
+var path = require('path');
 
 var config = JSON.parse(fs.readFileSync(__dirname + "/tsconfig.json"));
 
@@ -33,10 +35,16 @@ gulp.task("clean", function() {
 
 gulp.task("compile", function() {
     var tsProject = ts.createProject(__dirname + "/tsconfig.json");
-    var tsResult = tsProject.src().pipe(tsProject());
+    var tsResult = tsProject.src().pipe(sourcemaps.init()).pipe(tsProject());
     return merge([
         tsResult.js.pipe(gulp.dest(config.compilerOptions.outDir)),
-        tsResult.dts.pipe(gulp.dest(config.compilerOptions.outDir))
+        tsResult.dts.pipe(gulp.dest(config.compilerOptions.outDir)),
+        tsResult.js.pipe(sourcemaps.write({
+            includeContent: false,
+            sourceRoot: function (file) {
+                return path.relative(path.dirname(file.path), file.base);
+            }
+        }))
     ]);
 });
 
