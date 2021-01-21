@@ -73,11 +73,15 @@ function retrieveLanguage(self: any): string {
             lang = null;
         }
     } catch (e) {}
-    if (!lang) {
-        lang = self.getVariables()['lang'];
-    }
-    if (!lang) {
-        let app: App = self.ctx.req.app.get('app');
+    try {
+        if (!lang) {
+            lang = self.getVariables()['lang'];
+        }
+        if (!lang) {
+            let app: App = self.ctx.req.app.get('app');
+            lang = app.config.defaultLanguage;
+        }
+    } catch (e) {
         lang = app.config.defaultLanguage;
     }
     return lang;
@@ -122,6 +126,9 @@ function performTranslation(str: string, translations: any): string {
  * @return the formatted date
  */
 function date(d: Date, format?: string): string {
+    if (!d) {
+        return '';
+    }
     let lang = retrieveLanguage(this);
     let m = moment(d).locale(lang);
     if (!format) {
