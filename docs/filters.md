@@ -44,7 +44,7 @@ Usage:
 
 ```
 <span class="date">€ {{ data.createdAt | date }}</span>
-<span class="my_date_custom">{{ data.createdAt | date("YYYY-MM-DD") }}
+<span class="my_date_custom">{{ data.createdAt | date("YYYY-MM-DD") }}</span>
 ```
 
 ## `route` global function
@@ -68,7 +68,7 @@ will generate an url using the named route 'forgot_password'.
 With parameter:
 
 ```
-<a href="\{\{ route('details', { id: 12, order: 'age' }) \}\}" class="btn btn-link px-0">...</a>
+<a href="{{ route('details'}) }}" class="btn btn-link px-0">...</a>
 ```
 
 will generate something like `path/details/12?order=age`.
