@@ -1,3 +1,5 @@
+{% raw %}
+
 # Custom Nunjucks filters and function
 
 ## `tr` filter
@@ -68,7 +70,7 @@ will generate an url using the named route 'forgot_password'.
 With parameter:
 
 ```
-<a href="{{route('details', { id: 12, order: 'age' })}}" class="btn btn-link px-0">...</a>
+<a href="{{ route('details', { id: 12, order: 'age' }) }}" class="btn btn-link px-0">...</a>
 ```
 
 will generate something like `path/details/12?order=age`.
@@ -88,3 +90,5 @@ In this case, the `email` filed will be filled with the original `customer.email
 
 The `currentHost` function is used to retrieve the current server host. This can be used, with the `route` function, to generate an absolute
 url (for example, needed to generate an url for an email). The usage of this method is discouraged whenever possible.
+
+{% endraw %}
