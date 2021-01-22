@@ -1,4 +1,4 @@
-# Custom Nunjucks filters and function
+# Custom Nunjucks filters and functions
 
 ## `tr` filter
 
