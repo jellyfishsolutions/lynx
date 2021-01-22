@@ -68,8 +68,7 @@ will generate an url using the named route 'forgot_password'.
 With parameter:
 
 ```
-{% set obj = { id: 12, order: 'age' } %}
-<a href="{{ route('details', obj) }}" class="btn btn-link px-0">...</a>
+<a href="{% raw %}{{ route('details', { id: 12, order: 'age' } ) }}{% endraw %}" class="btn btn-link px-0">...</a>
 ```
 
 will generate something like `path/details/12?order=age`.
