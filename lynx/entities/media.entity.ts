@@ -147,14 +147,16 @@ export default class Media extends BaseEntity {
             m.fileName,
             app.config.cachePath
         );
-        let img = await Jimp.read(cachedPath);
-        try {
-            m.width = img.getWidth();
-            m.height = img.getHeight();
-        } catch (e) {
-            console.log("Error obtaining the metadata of the image.");
-            console.log("Image path: " + uploadMedia.path);
-            console.error(e);
+        if (m.mimetype.startsWith('image')) {
+            try {
+                let img = await Jimp.read(cachedPath);
+                m.width = img.getWidth();
+                m.height = img.getHeight();
+            } catch (e) {
+                console.log("Error obtaining the metadata of the image.");
+                console.log("Image path: " + uploadMedia.path);
+                console.error(e);
+            }
         }
         return m.save();
     }
