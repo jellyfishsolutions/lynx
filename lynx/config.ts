@@ -1,3 +1,4 @@
+import express from 'express';
 import { setSkipSync } from './entities/user.entity';
 import { MailClient, NodemailerClient } from './mail-client';
 import UFS from './ufs';
@@ -47,6 +48,14 @@ export default interface Config {
     onDatabaseInit: () => void;
     cachingImages: boolean;
     onlyModules: boolean;
+    globalInterceptors: {
+        cb: (
+            req: express.Request,
+            res: express.Response,
+            next: () => void
+        ) => void;
+        onlyFor?: string;
+    }[];
 }
 
 export class ConfigBuilder {
@@ -101,6 +110,7 @@ export class ConfigBuilder {
             onDatabaseInit: () => {},
             cachingImages: false,
             onlyModules: !legacyMode,
+            globalInterceptors: [],
         };
         if (!legacyMode) {
             this.config.db.entities = [];
@@ -283,6 +293,26 @@ export class ConfigBuilder {
 
     public enableCachingImages(): ConfigBuilder {
         this.config.cachingImages = true;
+        return this;
+    }
+
+    /**
+     * Add global interceptor to the Lynx application.
+     * They are mounted before any other routes and middleware, using the
+     * `express.use` methods.
+     * @param cb The interceptor function that needs to be executed
+     * @param onlyFor A sub-path for the interceptor (optional, default to anything)
+     * @returns
+     */
+    public addGlobalRoutingInterceptor(
+        cb: (
+            req: express.Request,
+            res: express.Response,
+            next: () => void
+        ) => void,
+        onlyFor?: string
+    ): ConfigBuilder {
+        this.config.globalInterceptors.push({ cb: cb, onlyFor: onlyFor });
         return this;
     }
 

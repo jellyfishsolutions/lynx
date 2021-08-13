@@ -252,7 +252,8 @@ export default class App {
     private _templateMap: any;
     private _modules: Set<BaseModule> = new Set();
     private _errorController: ErrorController;
-    public apiResponseWrapper: APIResponseWrapper = new DefaultAPIResponseWrapper();
+    public apiResponseWrapper: APIResponseWrapper =
+        new DefaultAPIResponseWrapper();
     private _mailClient: MailClient;
 
     get config(): Config {
@@ -350,6 +351,14 @@ export default class App {
             res.setHeader('X-Powered-By', 'lynx-framework/express');
             next();
         });
+
+        for (let interceptor of this.config.globalInterceptors) {
+            if (interceptor.onlyFor) {
+                this.express.use(interceptor.onlyFor, interceptor.cb);
+            } else {
+                this.express.use(interceptor.cb);
+            }
+        }
 
         this.express.use('/api/*', cors());
         if (this.config.jsonLimit) {
