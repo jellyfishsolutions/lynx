@@ -1,6 +1,7 @@
 import express from 'express';
 import { setSkipSync } from './entities/user.entity';
 import { MailClient, NodemailerClient } from './mail-client';
+import Response from './response';
 import UFS from './ufs';
 import { LocalUFS } from './ufs';
 
@@ -56,6 +57,10 @@ export default interface Config {
         ) => void;
         onlyFor?: string;
     }[];
+    beforePerformResponseInterceptors: ((
+        res: Response,
+        req: express.Request
+    ) => Response)[];
 }
 
 export class ConfigBuilder {
@@ -111,6 +116,7 @@ export class ConfigBuilder {
             cachingImages: false,
             onlyModules: !legacyMode,
             globalInterceptors: [],
+            beforePerformResponseInterceptors: [],
         };
         if (!legacyMode) {
             this.config.db.entities = [];
@@ -313,6 +319,22 @@ export class ConfigBuilder {
         onlyFor?: string
     ): ConfigBuilder {
         this.config.globalInterceptors.push({ cb: cb, onlyFor: onlyFor });
+        return this;
+    }
+
+    /**
+     * Add "Response" interceptor to the Lynx application.
+     * This interceptor will be executed when a request is completed, just before the
+     * execution of the `performResponse` method of any response object.
+     *
+     * This method must return a (potentially) new response, or edit the current response
+     * @param cb  The interceptor function that needs to be executed
+     * @returns
+     */
+    public addBeforePerformResponseInterceptor(
+        cb: (res: Response, req: express.Request) => Response
+    ): ConfigBuilder {
+        this.config.beforePerformResponseInterceptors.push(cb);
         return this;
     }
 

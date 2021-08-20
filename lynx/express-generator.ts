@@ -1,20 +1,20 @@
-import * as express from "express";
-import App from "./app";
-import SkipResponse from "./skip.response";
-import { ValidateObject } from "./validate-object";
-import { HttpVerb } from "./http-verb";
-import { LynxControllerMetadata, LynxRouteMetadata } from "./decorators";
-import { BaseMiddleware, BLOCK_CHAIN } from "./base.middleware";
+import * as express from 'express';
+import App from './app';
+import SkipResponse from './skip.response';
+import { ValidateObject } from './validate-object';
+import { HttpVerb } from './http-verb';
+import { LynxControllerMetadata, LynxRouteMetadata } from './decorators';
+import { BaseMiddleware, BLOCK_CHAIN } from './base.middleware';
 
-import { logger } from "./logger";
+import { logger } from './logger';
 
 function retrieveArgumentsNamesFromRoute(path: string) {
     const args = [];
-    const parts = path.split("/");
+    const parts = path.split('/');
     for (let part of parts) {
-        if (part.startsWith(":")) {
+        if (part.startsWith(':')) {
             let arg = part.substring(1, part.length);
-            let endIndex = arg.indexOf("(");
+            let endIndex = arg.indexOf('(');
             if (endIndex != -1) {
                 arg = arg.substring(0, endIndex);
             }
@@ -24,14 +24,18 @@ function retrieveArgumentsNamesFromRoute(path: string) {
     return args;
 }
 
-function generateStandardCallback(controller: any, route: LynxRouteMetadata, app: App) {
+function generateStandardCallback(
+    controller: any,
+    route: LynxRouteMetadata,
+    app: App
+) {
     return async (
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
     ) => {
         (req as any).lynx = {
-            route: route
+            route: route,
         };
         if (route.verifiers) {
             for (let verify of route.verifiers) {
@@ -44,7 +48,7 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata, app
                     } else {
                         try {
                             passed = (verify as any)(req, res);
-                        } catch(e) {
+                        } catch (e) {
                             logger.error(e);
                         }
                     }
@@ -82,14 +86,32 @@ function generateStandardCallback(controller: any, route: LynxRouteMetadata, app
         f.apply(controller, argsValues)
             .then((r: any) => {
                 if (!r) {
-                    logger.error("Wait, you have a method in a controller without any return!!");
+                    logger.error(
+                        'Wait, you have a method in a controller without any return!!'
+                    );
                     logger.error(`Method info: ${route.type} ${route.path}`);
-                    throw new Error("Method without any return!");
+                    throw new Error('Method without any return!');
                 }
                 if (route.isAPI) {
                     let body = app.apiResponseWrapper.onSuccess(r);
                     return res.send(body);
                 } else {
+                    for (let cb of app.config
+                        .beforePerformResponseInterceptors) {
+                        try {
+                            r = cb(r, req);
+                            if (!r) {
+                                throw new Error(
+                                    "The interceptor doesn't return!!!"
+                                );
+                            }
+                        } catch (e) {
+                            logger.error(
+                                `Caught an exception for method ${route.type} ${route.path} during the execution of an interceptor`
+                            );
+                            logger.error(e);
+                        }
+                    }
                     if (r instanceof SkipResponse) {
                         r.performResponse(req, res);
                         return next();
@@ -153,22 +175,22 @@ export function generateRouter(
                 break;
             default:
                 throw new Error(
-                    "The decoration type for the method " +
+                    'The decoration type for the method ' +
                         route.method +
-                        " is invalid"
+                        ' is invalid'
                 );
         }
         if (route.name) {
             routes[route.name] = (
                 originalController.controllerPath +
-                "/" +
+                '/' +
                 route.path
-            ).replace(/\/\/+/g, "/");
+            ).replace(/\/\/+/g, '/');
         }
         const callback = generateStandardCallback(controller, route, app);
         let p = route.path;
-        if (!p.startsWith("/")) {
-            p = "/" + p;
+        if (!p.startsWith('/')) {
+            p = '/' + p;
         }
         if (route.isMultipartForm) {
             func.call(router, p, app.upload.any(), callback);

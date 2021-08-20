@@ -474,3 +474,28 @@ The first method uses the `nunjuks` template system to send emails, both for pla
 The mail client is configured thought the `ConfigBuilder` of the application.
 
 By default, a standard SMTP sender client is used (using the usual NodeMailer library). It is possible to use a custom sender class (that implements the `MailClient` interface) using the `setMailClientFactoryConstructor` method of the `ConfigBuilder`.
+
+## Interceptors
+
+> This feature is available from version 1.1.21
+
+Lynx supports two types of interceptors, in order to manage and edit requests. Currently, _Global Routing Interceptor_ and _Before Perform Response Interceptor_ are supported.
+
+### Global Routing Interceptor
+
+This interceptor can be mounded as an additional `express Router`, and it is executed before any middleware or routes defined by the lynx modules system.
+Seems the interceptor is mounted as a router, it is possible to define a subpath in which it should be executed.
+
+> Warning: usually, it is possible to use a standard middleware to achieve most of the common jobs. Use this interceptor only if it is necessary to execute this function before any middleware.
+
+### Before Perform Response Interceptor
+
+This interceptor is executed just before the `performResponse` method of any Lynx `Response` is executed.
+This interceptor can be useful to override some standard behavior of the framework responses. A typical example is the editing of the final url for a `RedirectResponse`.
+
+### Basic usage
+
+At Jellyfish Solutions, we use this two interceptors in conjunction, in order to manage url rewrite based on the language.
+In this particular case, the language of the user is not set in the usual `Accept-Language` header of the request, but it is a portion of the current url.
+The _Global Routing Interceptor_ is used to remove the language from the request url, and correctly update the usual request language.
+The _Perform Response Interceptor_ is used to add (if necessary) the correct language to a redirect response, without editing the application code.
