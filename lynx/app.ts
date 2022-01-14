@@ -642,13 +642,26 @@ export default class App {
         });
     }
 
+    /**
+     * Proxy method to the usual `route` method available from the controller
+     * @param name the name of the route
+     * @param parameters an object containing the parameters of the route
+     * @returns the compiled url
+     */
     public route(name: string, parameters?: any) {
         return route(name, parameters);
     }
 
-    public translate(str: string, req: express.Request): string {
+    /**
+     * Request the translation of a string
+     * @param str  the string to be translated
+     * @param req the request from which infer the language
+     * @param language optionally, the language can be forced using this variable
+     * @returns the translated string
+     */
+    public translate(str: string, req: express.Request, language?: string): string {
         try {
-            let lang = getLanguageFromRequest(req);
+            let lang = language ?? getLanguageFromRequest(req);
             if (!lang) {
                 lang = this._config.defaultLanguage;
             }
@@ -659,6 +672,11 @@ export default class App {
         return str;
     }
 
+    /**
+     * Utility method to generate an user token
+     * @param user the user
+     * @returns the token for the user
+     */
     public generateTokenForUser(user: User): string {
         return sign({ id: user.id }, this._config.tokenSecret, {
             expiresIn: '1y',
