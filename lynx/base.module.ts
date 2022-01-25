@@ -1,3 +1,4 @@
+import App from './app';
 import Config from './config';
 
 export default abstract class BaseModule {
@@ -69,5 +70,14 @@ export default abstract class BaseModule {
         }
     }
 
+    /**
+     * This method is called when the connection to the database is established.
+     */
     public onDatabaseConnected() {}
+
+    /**
+     * This method is called when the Lynx app is configured and ready to be executed.
+     */
+    // @ts-ignore: 'app' is declared but its value is never read.
+    public async onAppReady(app: App): Promise<void> {}
 }

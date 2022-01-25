@@ -433,6 +433,10 @@ export default class App {
         this._mailClient.init().catch((err) => {
             logger.warn('Error trying to initialize the mailClient', err);
         });
+
+        this._modules.forEach(async (module) =>
+            await module.onAppReady(this)
+        );
     }
 
     private recursiveGenerateTemplateMap(path: string, currentPath: string) {
