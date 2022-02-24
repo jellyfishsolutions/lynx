@@ -4,7 +4,7 @@ import * as Jimp from 'jimp';
 import * as fs from 'fs';
 import { app } from './app';
 
-function fileExsist(path: string): Promise<boolean> {
+function fileExists(path: string): Promise<boolean> {
     return new Promise<boolean>((res, _) => {
         fs.exists(path, (val) => {
             res(val);
@@ -88,8 +88,14 @@ export default class FileResponse extends AsyncResponse {
         }
 
         let cachePath = path + '_' + JSON.stringify(this._options);
-        if (await fileExsist(cachePath)) {
+        if (await fileExists(cachePath)) {
             return this.download(res, cachePath);
+        }
+
+        if (!(await fileExists(path))) {
+            res.status(404);
+            res.end();
+            return;
         }
 
         let img = {} as Jimp;
