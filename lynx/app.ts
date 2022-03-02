@@ -255,6 +255,7 @@ export default class App {
     public apiResponseWrapper: APIResponseWrapper =
         new DefaultAPIResponseWrapper();
     private _mailClient: MailClient;
+    private _appSession: any;
 
     get config(): Config {
         return this._config;
@@ -274,6 +275,10 @@ export default class App {
 
     get mailClient(): MailClient {
         return this._mailClient;
+    }
+
+    get appSession(): any {
+        return this._appSession;
     }
 
     /**
@@ -377,8 +382,8 @@ export default class App {
         if (config.sessionStore) {
             app_session_options.store = config.sessionStore;
         }
-        let app_session = session(app_session_options);
-        this.express.use(app_session);
+        this._appSession = session(app_session_options);
+        this.express.use(this._appSession);
         this.express.use(flash());
 
         this._upload = multer({ dest: config.uploadPath });
@@ -434,9 +439,7 @@ export default class App {
             logger.warn('Error trying to initialize the mailClient', err);
         });
 
-        this._modules.forEach(async (module) =>
-            await module.onAppReady(this)
-        );
+        this._modules.forEach(async (module) => await module.onAppReady(this));
     }
 
     private recursiveGenerateTemplateMap(path: string, currentPath: string) {
@@ -663,7 +666,11 @@ export default class App {
      * @param language optionally, the language can be forced using this variable
      * @returns the translated string
      */
-    public translate(str: string, req: express.Request, language?: string): string {
+    public translate(
+        str: string,
+        req: express.Request,
+        language?: string
+    ): string {
         try {
             let lang = language ?? getLanguageFromRequest(req);
             if (!lang) {
