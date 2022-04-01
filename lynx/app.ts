@@ -33,6 +33,7 @@ import {
 } from './api-response-wrapper';
 import { MailClient } from './mail-client';
 import { initializeTemplating } from './templating/decorators';
+import { FileOptions } from './file.response';
 
 /**
  * Utility function to check if we are in the production environment.
@@ -240,6 +241,11 @@ function currentHost(): string {
 
 export let app: App;
 
+export type ResizeFunction = (
+    path: string,
+    options: FileOptions
+) => Promise<Buffer>;
+
 /**
  * The App class contains the initialization code for a Lynx application.
  */
@@ -256,6 +262,7 @@ export default class App {
         new DefaultAPIResponseWrapper();
     private _mailClient: MailClient;
     private _appSession: any;
+    private _customResizeFunction: ResizeFunction | null;
 
     get config(): Config {
         return this._config;
@@ -279,6 +286,21 @@ export default class App {
 
     get appSession(): any {
         return this._appSession;
+    }
+
+    /**
+     * If not null, contains a custom function that perform the resizing of an image
+     */
+    get customResizeFunction(): ResizeFunction | null {
+        return this._customResizeFunction;
+    }
+
+    /**
+     * Set a new image resizing function, that will be executed automatically when a new file is downloaded.
+     * The cache system will automatically work; this function shall only execute the image resizing.
+     */
+    set customResizeFunction(resizeFunction: ResizeFunction | null) {
+        this._customResizeFunction = resizeFunction;
     }
 
     /**
@@ -365,7 +387,6 @@ export default class App {
             }
         }
 
-        this.express.use('/api/*', cors());
         if (this.config.jsonLimit) {
             this.express.use(bodyParser.json({ limit: this.config.jsonLimit }));
         } else {

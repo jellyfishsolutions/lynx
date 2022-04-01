@@ -3,6 +3,7 @@ import AsyncResponse from './async.response';
 import * as Jimp from 'jimp';
 import * as fs from 'fs';
 import { app } from './app';
+import logger from './logger';
 
 function fileExists(path: string): Promise<boolean> {
     return new Promise<boolean>((res, _) => {
@@ -16,7 +17,16 @@ function saveToCache(path: string, s: Jimp) {
     if (!app.config.cachingImages) {
         return;
     }
-    s.writeAsync(path).catch((err) => console.error(err));
+    s.writeAsync(path).catch((err) => logger.shared.error(err));
+}
+
+function saveBuffToCache(path: string, buff: Buffer) {
+    if (!app.config.cachingImages) {
+        return;
+    }
+    fs.writeFile(path, buff, (err) => {
+        logger.shared.error(err);
+    });
 }
 
 /**
@@ -98,6 +108,16 @@ export default class FileResponse extends AsyncResponse {
             return;
         }
 
+        if (
+            app.customResizeFunction != null &&
+            (this._options.height || this._options.width)
+        ) {
+            let buff = await app.customResizeFunction(path, this._options);
+            res.send(buff);
+            res.end();
+            saveBuffToCache(cachePath, buff);
+            return;
+        }
         let img = {} as Jimp;
         let hasProcessing = false;
         if (!this._options.height) {
