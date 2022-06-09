@@ -106,12 +106,12 @@ export class BaseController {
     }
 
     /**
-     * This method generate an url to a route starting from the route name and
+     * This method generates a url to a route starting from the route name and
      * optionally its parameters.
-     * If a parameter not is used to generate the route url, it will be appended
+     * If a parameter is not used to generate the route url, it will be appended
      * as a query parameter.
      * @param name the name of the route
-     * @param parameters a plain object containing the paramters for the route.
+     * @param parameters a plain object containing the parameters for the route.
      */
     public route(name: string, parameters?: any): string {
         return this.app.route(name, parameters);
@@ -142,7 +142,7 @@ export class BaseController {
     /**
      * Redirect the current route to another
      * @param routeName the new of the target route
-     * @param routeParams a plain object containing the paramters for the route.
+     * @param routeParams a plain object containing the parameters for the route.
      */
     public redirect(routeName: string, routeParams?: any): RedirectResponse {
         return new RedirectResponse(this.route(routeName, routeParams));
@@ -209,6 +209,7 @@ export class BaseController {
     }
 
     /**
+     * @deprecated use the `throw this.error(401, 'unauthorized') instead.
      * Generate an unauthorized response.
      */
     public unauthorized(): UnauthorizedResponse {
@@ -216,7 +217,7 @@ export class BaseController {
     }
 
     /**
-     * Generate a skip resopnse. In this particuar case, the original Express `next()`
+     * Generate a skip response. In this particular case, the original Express `next()`
      * will be executed, causing the controller chain to continue its execution.
      */
     public next(): SkipResponse {
@@ -224,9 +225,9 @@ export class BaseController {
     }
 
     /**
-     * Generate a response as an Xml file, but starting from a standard Nunjuks template.
-     * This response is very similar to the standard render response. The main difference is the
-     * the `contentType`, setted do `application/xml`.
+     * Generate a response as an Xml file, but starting from a standard Nunjucks template.
+     * This response is very similar to the standard render response. The main difference is
+     * the `contentType`, set to `application/xml`.
      * Moreover, the flash messages are ignored.
      * @param view the name of the view
      * @param req the request object
@@ -299,9 +300,10 @@ export class BaseController {
      * Utility method to obtain a translated string.
      * @param str the string key to be translated
      * @param req the original request
+     * @param language optionally, the language can be forced using this variable
      */
-    public tr(str: string, req: Request): string {
-        return this.app.translate(str, req);
+    public tr(str: string, req: Request, language?: string): string {
+        return this.app.translate(str, req, language);
     }
 
     /**
@@ -309,33 +311,15 @@ export class BaseController {
      * Each parameter should be encoded as {0}, {1}, etc...
      * @param str the string key to be translated
      * @param req the original request
+     * @param language optionally, the language can be forced using this variable
      * @param args the arguments to format the string
      */
-    public trFormat(str: string, req: Request, ...args: any): string {
-        let translated = this.tr(str, req);
-        return this.format(translated, args);
-    }
-
-    private format(fmt: string, ...args: any) {
-        if (
-            !fmt.match(/^(?:(?:(?:[^{}]|(?:\{\{)|(?:\}\}))+)|(?:\{[0-9]+\}))+$/)
-        ) {
-            throw new Error('invalid format string.');
-        }
-        return fmt.replace(
-            /((?:[^{}]|(?:\{\{)|(?:\}\}))+)|(?:\{([0-9]+)\})/g,
-            (_, str, index) => {
-                if (str) {
-                    return str.replace(/(?:{{)|(?:}})/g, (m: string[]) => m[0]);
-                } else {
-                    if (index >= args.length) {
-                        throw new Error(
-                            'argument index is out of range in format'
-                        );
-                    }
-                    return args[index];
-                }
-            }
-        );
+    public trFormat(
+        str: string,
+        req: Request,
+        language: string | undefined,
+        ...args: any
+    ): string {
+        return this.app.translateFormat(str, req, language, args);
     }
 }

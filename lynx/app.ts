@@ -8,7 +8,6 @@ import { createConnection } from 'typeorm';
 import * as session from 'express-session';
 import * as bodyParser from 'body-parser';
 import * as multer from 'multer';
-import * as cors from 'cors';
 import * as moment from 'moment';
 const flash = require('express-flash');
 import Config from './config';
@@ -702,6 +701,47 @@ export default class App {
             logger.info(e);
         }
         return str;
+    }
+
+    /**
+     * Request the translation of a string, formatted with parameters.
+     * Each parameter should be encoded as {0}, {1}, etc...
+     * @param str the string key to be translated
+     * @param req the original request
+     * @param language optionally, the language can be forced using this variable
+     * @param args the arguments to format the string
+     */
+    public translateFormat(
+        str: string,
+        req: express.Request,
+        language: string | undefined,
+        ...args: any
+    ): string {
+        let translated = this.translate(str, req, language);
+        return this.format(translated, args);
+    }
+
+    private format(fmt: string, ...args: any) {
+        if (
+            !fmt.match(/^(?:(?:(?:[^{}]|(?:\{\{)|(?:\}\}))+)|(?:\{[0-9]+\}))+$/)
+        ) {
+            throw new Error('invalid format string.');
+        }
+        return fmt.replace(
+            /((?:[^{}]|(?:\{\{)|(?:\}\}))+)|(?:\{([0-9]+)\})/g,
+            (_, str, index) => {
+                if (str) {
+                    return str.replace(/(?:{{)|(?:}})/g, (m: string[]) => m[0]);
+                } else {
+                    if (index >= args.length) {
+                        throw new Error(
+                            'argument index is out of range in format'
+                        );
+                    }
+                    return args[index];
+                }
+            }
+        );
     }
 
     /**
