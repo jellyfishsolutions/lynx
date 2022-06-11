@@ -221,8 +221,13 @@ function resolvePath(path: string): string {
     if (normalizedPath.endsWith('.njk')) {
         normalizedPath = normalizedPath.substring(0, normalizedPath.length - 4);
     }
-    let app: App = this.ctx.req.app.get('app');
-    let resolved = app.templateMap[path];
+    let _app: App;
+    try {
+        _app = this.ctx.req.app.get('app');
+    } catch (e) {
+        _app = app;
+    }
+    let resolved = _app.templateMap[path];
     if (resolved) {
         return resolved;
     }
