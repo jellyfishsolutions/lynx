@@ -723,7 +723,7 @@ export default class App {
         ...args: any
     ): string {
         let translated = this.translate(str, req, language);
-        return this.format(translated, args);
+        return this.format(translated, ...args);
     }
 
     private format(fmt: string, ...args: any) {
