@@ -62,7 +62,7 @@
         "express-session": "^1.17.1",
         "fs-extra": "^9.0.1",
         "jimp": "^0.16.1",
-        "jsonwebtoken": "^8.5.1",
+        "jsonwebtoken": "^9.0.0",
         "mime-type": "^4.0.0",
         "moment": "^2.29.1",
         "multer": "^1.4.2",
